@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package JaegerNet;
+
+message Test
+{
+  double limit_lower    = 2;
+  double limit_upper    = 3;
+  double limit_effort   = 4;
+  double limit_velocity = 5;
+  double damping        = 6;
+  double friction       = 7;
+}
