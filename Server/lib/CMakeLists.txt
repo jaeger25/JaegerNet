@@ -1,2 +1,2 @@
-add_library (ServerLib "ServerLib.cpp" "ServerLib.h")
-cotire(ClientLib)
+add_library (ServerLib "Server.cpp" "Server.h")
+cotire(ServerLib)
