@@ -7,5 +7,9 @@ namespace JaegerNet
 {
     class MessageHandler
     {
+    public:
+        void OnMessageReceived(const JaegerNetMessage& message);
+
+    private:
     };
 }

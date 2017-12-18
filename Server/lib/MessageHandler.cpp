@@ -1,7 +1,12 @@
 #include "MessageHandler.h"
 
-using namespace asio;
 using namespace JaegerNet;
 using namespace std;
 
-using asio::ip::udp;
+void MessageHandler::OnMessageReceived(const JaegerNetMessage& message)
+{
+    if (message.has_connect())
+    {
+        ConnectMessage connectMessage = message.connect();
+    }
+}
