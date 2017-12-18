@@ -1,4 +1,4 @@
-PROTOBUF_GENERATE_CPP(PROTO_SRC PROTO_HEADER ConnectMessage.proto;JaegerNet.proto)
+PROTOBUF_GENERATE_CPP(PROTO_SRC PROTO_HEADER ConnectMessage.proto;CreateLobbyMessage.proto;JaegerNet.proto)
 
 # Variables needed to propagate through modules
 # If more than one layer of cmake use CACHE INTERNAL ...

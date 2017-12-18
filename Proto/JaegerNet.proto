@@ -1,12 +1,14 @@
 syntax = "proto3";
 package JaegerNet;
 
+import "CreateLobbyMessage.proto";
 import "ConnectMessage.proto";
 
 message JaegerNetMessage
 {
     oneof MessageType
     {
-        ConnectMessage Connect = 1;
+        CreateLobbyMessage CreateLobby = 1;
+        ConnectMessage Connect = 2;
     }
 }

@@ -10,19 +10,27 @@ namespace JaegerNet
 {
     enum { MaxPacketSize = 65535 };
 
-    class Server
+    class IServer
     {
     public:
-        Server(MessageHandler messageHandler, asio::io_service& ioService, short port);
+        virtual void Run() = 0;
+        virtual void Send(const JaegerNetMessage& message) = 0;
+    };
 
-        void Send(std::size_t length);
+    class Server : IServer
+    {
+    public:
+        Server(short port);
+        virtual ~Server();
+
+        virtual void Run();
+        virtual void Send(const JaegerNetMessage& message);
 
     private:
         void StartReceive();
         void OnDataReceived(const std::error_code& error, std::size_t /*bytesReceived*/);
         void OnDataSent(const std::error_code& error, std::size_t /*bytesReceived*/);
 
-        MessageHandler m_messageHandler;
         asio::ip::udp::socket m_socket;
         asio::ip::udp::endpoint m_endpoint;
         std::array<char, MaxPacketSize> m_data;
