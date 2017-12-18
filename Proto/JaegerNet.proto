@@ -1,13 +1,12 @@
 syntax = "proto3";
-
 package JaegerNet;
 
-message Test
+import "ConnectMessage.proto";
+
+message JaegerNetMessage
 {
-  double limit_lower    = 2;
-  double limit_upper    = 3;
-  double limit_effort   = 4;
-  double limit_velocity = 5;
-  double damping        = 6;
-  double friction       = 7;
+    oneof MessageType
+    {
+        ConnectMessage Connect = 1;
+    }
 }

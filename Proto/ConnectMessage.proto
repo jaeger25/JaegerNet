@@ -1,0 +1,7 @@
+syntax = "proto3";
+package JaegerNet;
+
+message ConnectMessage
+{
+    uint32 PlayerNumber = 1;
+}

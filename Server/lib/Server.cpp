@@ -6,13 +6,22 @@ using namespace std;
 
 using asio::ip::udp;
 
-Server::Server(io_service& ioService, short port)
-    : m_socket(ioService, udp::endpoint(udp::v4(), port))
+Server::Server(io_service& ioService, short port) :
+    m_socket(ioService, udp::endpoint(udp::v4(), port))
 {
-    do_receive();
+    Receive();
 }
 
-void Server::do_receive()
+void Server::Send(std::size_t length)
+{
+    m_socket.async_send_to(
+        asio::buffer(m_data, length), m_endpoint,
+        [this](std::error_code /*ec*/, std::size_t /*bytes_sent*/)
+    {
+    });
+}
+
+void Server::Receive()
 {
     m_socket.async_receive_from(
         asio::buffer(m_data), m_endpoint,
@@ -24,17 +33,7 @@ void Server::do_receive()
         }
         else
         {
-            do_receive();
+            Receive();
         }
-    });
-}
-
-void Server::Send(std::size_t length)
-{
-    m_socket.async_send_to(
-        asio::buffer(m_data, length), m_endpoint,
-        [this](std::error_code /*ec*/, std::size_t /*bytes_sent*/)
-    {
-        do_receive();
     });
 }
