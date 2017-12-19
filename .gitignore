@@ -259,17 +259,4 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
-/CMakeFiles
-*.vcxproj
-/CMakeCache.txt
-*.filters
-/cmake_install.cmake
-*.cmake
-/Server/CMakeFiles
-/Server/lib/CMakeFiles
-/Client/lib/CMakeFiles
-/Client/CMakeFiles
-/Proto/*.pb.*
-/Proto/CMakeFiles
-*.sln
-/Server/exe/CMakeFiles
+build/

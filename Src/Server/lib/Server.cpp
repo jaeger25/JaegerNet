@@ -6,20 +6,14 @@ using namespace std;
 
 using asio::ip::udp;
 
-Server::Server(short port) :
-    m_socket(io_service(), udp::endpoint(udp::v4(), port))
+Server::Server(asio::io_service& service, short port) :
+    m_socket(service, udp::endpoint(udp::v4(), port))
 {
     StartReceive();
 }
 
 Server::~Server()
 {
-    m_socket.get_io_service().stop();
-}
-
-void Server::Run()
-{
-    m_socket.get_io_service().run();
 }
 
 void Server::Send(const JaegerNetMessage& message)

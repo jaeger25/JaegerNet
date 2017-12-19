@@ -6,8 +6,11 @@ using namespace std;
 
 int main(int /*argc*/, char** /*argv*/)
 {
-    Server server(31337);
-    server.Run();
+    asio::io_service service;
+
+    Server server(service, 31337);
+
+    service.run();
 
     return 0;
 }
