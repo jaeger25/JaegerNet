@@ -13,17 +13,15 @@ namespace JaegerNet
     class IServer
     {
     public:
-        virtual void Run() = 0;
         virtual void Send(const JaegerNetMessage& message) = 0;
     };
 
     class Server : IServer
     {
     public:
-        Server(short port);
+        Server(asio::io_service& service, short port);
         virtual ~Server();
 
-        virtual void Run();
         virtual void Send(const JaegerNetMessage& message);
 
     private:
