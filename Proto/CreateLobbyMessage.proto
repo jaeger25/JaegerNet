@@ -1,0 +1,7 @@
+syntax = "proto3";
+package JaegerNet;
+
+message CreateLobbyMessage
+{
+    int32 Error = 1;
+}

@@ -6,35 +6,73 @@ using namespace std;
 
 using asio::ip::udp;
 
-Server::Server(io_service& ioService, short port)
-    : m_socket(ioService, udp::endpoint(udp::v4(), port))
+Server::Server(short port) :
+    m_socket(io_service(), udp::endpoint(udp::v4(), port))
 {
-    do_receive();
+    StartReceive();
 }
 
-void Server::do_receive()
+Server::~Server()
+{
+    m_socket.get_io_service().stop();
+}
+
+void Server::Run()
+{
+    m_socket.get_io_service().run();
+}
+
+void Server::Send(const JaegerNetMessage& message)
+{
+    std::vector<std::byte> serializedMessage(message.ByteSize());
+
+    if (!message.SerializeToArray(&serializedMessage, static_cast<int>(serializedMessage.size())))
+    {
+        // TODO: log
+        return;
+    }
+
+    m_socket.async_send_to(
+        asio::buffer(serializedMessage), m_endpoint,
+        std::bind(&Server::OnDataSent, this,
+            std::placeholders::_1,
+            std::placeholders::_2));
+}
+
+void Server::StartReceive()
 {
     m_socket.async_receive_from(
         asio::buffer(m_data), m_endpoint,
-        [this](std::error_code errorCode, std::size_t bytesReceived)
-    {
-        if (!errorCode && bytesReceived > 0)
-        {
-            Send(bytesReceived);
-        }
-        else
-        {
-            do_receive();
-        }
-    });
+        std::bind(&Server::OnDataReceived, this,
+            std::placeholders::_1,
+            std::placeholders::_2));
 }
 
-void Server::Send(std::size_t length)
+void Server::OnDataReceived(const std::error_code& error, std::size_t bytesReceived)
 {
-    m_socket.async_send_to(
-        asio::buffer(m_data, length), m_endpoint,
-        [this](std::error_code /*ec*/, std::size_t /*bytes_sent*/)
+    if (!error || bytesReceived > 0)
     {
-        do_receive();
-    });
+        JaegerNetMessage message;
+        if (!message.ParseFromArray(m_data.data(), static_cast<int>(bytesReceived)))
+        {
+            // TODO: log / handle
+            return;
+        }
+
+        //m_messageHandler.OnMessageReceived(message);
+
+        StartReceive();
+    }
+}
+
+void Server::OnDataSent(const std::error_code& error, std::size_t bytesReceived)
+{
+    if (!error || bytesReceived > 0)
+    {
+        // TODO: Log
+    }
+    else
+    {
+        // TODO: Log
+    }
 }

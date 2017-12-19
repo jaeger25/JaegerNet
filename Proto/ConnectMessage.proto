@@ -1,0 +1,8 @@
+syntax = "proto3";
+package JaegerNet;
+
+message ConnectMessage
+{
+    int32 LobbyId = 1;
+    int32 PlayerNumber = 2;
+}

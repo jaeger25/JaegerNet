@@ -269,7 +269,7 @@ __pycache__/
 /Server/lib/CMakeFiles
 /Client/lib/CMakeFiles
 /Client/CMakeFiles
-/Proto/JaegerNet.pb.h
-/Proto/JaegerNet.pb.cc
+/Proto/*.pb.*
 /Proto/CMakeFiles
 *.sln
+/Server/exe/CMakeFiles
