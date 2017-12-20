@@ -6,8 +6,9 @@ using namespace std;
 
 using asio::ip::udp;
 
-Server::Server(asio::io_service& service, short port) :
-    m_socket(service, udp::endpoint(udp::v4(), port))
+Server::Server(asio::io_service& service, short port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers) :
+    m_socket(service, udp::endpoint(udp::v4(), port)),
+    m_messageHandlers(std::move(messageHandlers))
 {
     StartReceive();
 }
@@ -16,7 +17,7 @@ Server::~Server()
 {
 }
 
-void Server::Send(const JaegerNetMessage& message)
+void Server::Send(const google::protobuf::Message& message)
 {
     std::vector<std::byte> serializedMessage(message.ByteSize());
 

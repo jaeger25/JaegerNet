@@ -5,4 +5,5 @@ message ConnectMessage
 {
     int32 LobbyId = 1;
     int32 PlayerNumber = 2;
+    int32 Error = 3;
 }

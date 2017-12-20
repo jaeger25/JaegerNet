@@ -3,5 +3,9 @@ package JaegerNet;
 
 message CreateLobbyMessage
 {
-    int32 Error = 1;
+    // Request
+
+    // Response
+    int32 LobbyId = 1;
+    int32 Error = 2;
 }

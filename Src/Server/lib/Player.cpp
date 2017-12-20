@@ -3,7 +3,8 @@
 using namespace JaegerNet;
 using namespace std;
 
-Player::Player()
+Player::Player(int playerNumber) :
+    m_playerNumber(playerNumber)
 {
 
 }
@@ -11,4 +12,9 @@ Player::Player()
 Player::~Player()
 {
 
+}
+
+int Player::PlayerNumber() const
+{
+    return m_playerNumber;
 }

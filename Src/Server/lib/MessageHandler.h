@@ -15,6 +15,8 @@ namespace JaegerNet
     class IMessageHandler
     {
     public:
-        virtual void OnMessageReceived(const IServer& sender, MessageReceivedEventArgs& eventArgs) noexcept = 0;
+        virtual ~IMessageHandler() = default;
+
+        virtual void OnMessageReceived(IServer& sender, MessageReceivedEventArgs& eventArgs) noexcept = 0;
     };
 }
