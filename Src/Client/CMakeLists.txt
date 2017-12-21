@@ -1,4 +1,5 @@
-include_directories(${CMAKE_SOURCE_DIR}/Server/inc)
+include_directories(inc)
 
-add_subdirectory ("exe")
-add_subdirectory ("lib")
+add_subdirectory("dll")
+add_subdirectory("exe")
+add_subdirectory("lib")

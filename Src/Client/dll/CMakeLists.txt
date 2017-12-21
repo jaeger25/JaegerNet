@@ -1,11 +1,11 @@
 include_directories(../lib)
 
-add_executable(ClientExe
+add_library(JaegerNetClient SHARED
     "Module.cpp")
 
-target_link_libraries(ClientExe
+target_link_libraries(JaegerNetClient
     ProtoLib
     ClientLib
     ${PROTOBUF_LIBRARY})
 
-cotire(ClientExe)
+cotire(JaegerNetClient)

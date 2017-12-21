@@ -1,4 +1,3 @@
-#include "Module.h"
 #include "Client.h"
 
 using namespace JaegerNet;
@@ -39,20 +38,17 @@ public:
 
 int main(int /*argc*/, char** /*argv*/)
 {
-    asio::io_service service;
-
     std::vector<std::unique_ptr<IMessageHandler>> messageHandlers;
     messageHandlers.emplace_back(std::make_unique<Test>());
 
-    Client client(service, "127.0.0.1", "31337", std::move(messageHandlers));
+    Client client("127.0.0.1", "31337", std::move(messageHandlers));
 
     auto createLobbyMessage = std::make_unique<CreateLobbyRequest>();
     JaegerNetRequest message;
     message.set_allocated_createlobbyrequest(createLobbyMessage.release());
 
     client.Send(message);
-
-    service.run();
+    client.Run(false);
 
     return 0;
 }
