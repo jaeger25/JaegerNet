@@ -4,11 +4,20 @@ package JaegerNet;
 import "CreateLobbyMessage.proto";
 import "ConnectMessage.proto";
 
-message JaegerNetMessage
+message JaegerNetRequest
 {
     oneof MessageType
     {
-        CreateLobbyMessage CreateLobby = 1;
-        ConnectMessage Connect = 2;
+        CreateLobbyRequest CreateLobbyRequest = 1;
+        ConnectRequest ConnectRequest = 2;
+    }
+}
+
+message JaegerNetResponse
+{
+    oneof MessageType
+    {
+        CreateLobbyResponse CreateLobbyResponse = 1;
+        ConnectResponse ConnectResponse = 2;
     }
 }
