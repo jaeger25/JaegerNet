@@ -1,7 +1,7 @@
-prefix=C:/Users/majaeger/source/repos/vcpkg/packages/protobuf_x86-windows/debug
-exec_prefix=C:/Users/majaeger/source/repos/vcpkg/packages/protobuf_x86-windows/debug
-libdir=C:/Users/majaeger/source/repos/vcpkg/packages/protobuf_x86-windows/debug/lib
-includedir=C:/Users/majaeger/source/repos/vcpkg/packages/protobuf_x86-windows/debug/include
+prefix=C:/Users/Matt/Source/Repos/vcpkg/packages/protobuf_x86-windows/debug
+exec_prefix=C:/Users/Matt/Source/Repos/vcpkg/packages/protobuf_x86-windows/debug
+libdir=C:/Users/Matt/Source/Repos/vcpkg/packages/protobuf_x86-windows/debug/lib
+includedir=C:/Users/Matt/Source/Repos/vcpkg/packages/protobuf_x86-windows/debug/include
 
 Name: Protocol Buffers
 Description: Google's Data Interchange Format
