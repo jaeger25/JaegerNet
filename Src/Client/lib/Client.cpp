@@ -1,7 +1,9 @@
 #include "Client.h"
+#include <atomic>
 #include <shared_mutex>
 
 using namespace asio;
+using namespace google::protobuf;
 using namespace JaegerNet;
 using namespace std;
 
@@ -48,13 +50,18 @@ Client::~Client()
     m_serviceThread.join();
 }
 
-void Client::Send(const JaegerNetRequest& message)
+void Client::Send(JaegerNetRequest& message, ResponseReceivedCallback&& callback)
 {
+    static std::atomic_uint64_t NextMessageId = 1;
+    message.set_messageid(NextMessageId++);
+
     if (!message.SerializeToArray(&m_sentData, message.ByteSize()))
     {
         // TODO: log
         return;
     }
+
+    m_responseCallbackMap.emplace(message.messageid(), std::move(callback));
 
     m_socket.async_send_to(
         asio::buffer(m_sentData, message.ByteSize()), m_endpoint,
@@ -102,6 +109,12 @@ void Client::OnDataReceived(const std::error_code& error, std::size_t bytesRecei
         for (auto&& handler : m_messageHandlers)
         {
             handler->OnMessageReceived(this, args);
+        }
+
+        auto responseCallbackIter = m_responseCallbackMap.find(message.messageid());
+        if (responseCallbackIter != m_responseCallbackMap.end())
+        {
+            responseCallbackIter->second(message);
         }
 
         StartReceive();

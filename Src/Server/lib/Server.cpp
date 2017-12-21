@@ -1,4 +1,5 @@
 #include "Server.h"
+#include "ErrorCodes.h"
 #include "MessageHandler.h"
 
 using namespace asio;
@@ -20,6 +21,8 @@ Server::~Server()
 
 void Server::Send(const JaegerNetResponse& message)
 {
+    FAIL_FAST_IF(message.messageid() == 0);
+
     if (!message.SerializeToArray(&m_sentData, message.ByteSize()))
     {
         // TODO: log

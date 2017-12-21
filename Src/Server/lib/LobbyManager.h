@@ -21,8 +21,8 @@ namespace JaegerNet
         virtual void OnMessageReceived(IServer* const sender, MessageReceivedEventArgs& eventArgs) noexcept;
 
     private:
-        void HandleCreateLobbyRequest(IServer* const sender, MessageReceivedEventArgs& eventArgs) noexcept;
-        void HandleConnectRequest(IServer* const sender, MessageReceivedEventArgs& eventArgs) noexcept;
+        JaegerNetResponse&& HandleCreateLobbyRequest(MessageReceivedEventArgs& eventArgs) noexcept;
+        JaegerNetResponse&& HandleConnectRequest(MessageReceivedEventArgs& eventArgs) noexcept;
 
         std::shared_mutex m_lobbiesLock;
         std::map<int32_t, Lobby> m_lobbies;

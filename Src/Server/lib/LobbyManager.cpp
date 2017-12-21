@@ -4,8 +4,8 @@
 #include "Server.h"
 #include <atomic>
 
+using namespace google::protobuf;
 using namespace JaegerNet;
-using namespace std;
 
 LobbyManager::LobbyManager()
 {
@@ -19,20 +19,25 @@ LobbyManager::~LobbyManager()
 
 void LobbyManager::OnMessageReceived(IServer* const sender, MessageReceivedEventArgs& eventArgs) noexcept
 {
+    JaegerNetResponse response;
     if (eventArgs.Message.has_createlobbyrequest())
     {
-        HandleCreateLobbyRequest(sender, eventArgs);
+        response = HandleCreateLobbyRequest(eventArgs);
     }
     else if (eventArgs.Message.has_connectrequest())
     {
-        HandleConnectRequest(sender, eventArgs);
+        response = HandleConnectRequest(eventArgs);
     }
+
+    response.set_messageid(eventArgs.Message.messageid());
+    sender->Send(response);
 }
 
-void LobbyManager::HandleCreateLobbyRequest(IServer* const sender, MessageReceivedEventArgs& /*eventArgs*/) noexcept
+JaegerNetResponse&& LobbyManager::HandleCreateLobbyRequest(MessageReceivedEventArgs& /*eventArgs*/) noexcept
 {
     static std::atomic_int32_t NextLobbyId = 0;
 
+    JaegerNetResponse response;
     auto createLobbyResponse = std::make_unique<CreateLobbyResponse>();
 
     if (auto lobbyId = NextLobbyId++; lobbyId < MaxLobbies)
@@ -44,24 +49,24 @@ void LobbyManager::HandleCreateLobbyRequest(IServer* const sender, MessageReceiv
     }
     else
     {
-        createLobbyResponse->set_error(JaegerErrorToProtobuf(JaegerNetError::MaxLobbiesExceeded));
+        response.set_error(static_cast<int32>(JaegerNetError::MaxLobbiesExceeded));
     }
 
-    JaegerNetResponse response;
     response.set_allocated_createlobbyresponse(createLobbyResponse.release());
-    sender->Send(response);
+    return std::move(response);
 }
 
-void LobbyManager::HandleConnectRequest(IServer* const sender, MessageReceivedEventArgs& eventArgs) noexcept
+JaegerNetResponse&& LobbyManager::HandleConnectRequest(MessageReceivedEventArgs& eventArgs) noexcept
 {
     std::shared_lock<std::shared_mutex> lock(m_lobbiesLock);
 
+    JaegerNetResponse response;
     auto connectMessageResponse = std::make_unique<ConnectResponse>();
     auto lobbyId = eventArgs.Message.connectrequest().lobbyid();
 
     if (auto lobbyIter = m_lobbies.find(lobbyId); lobbyIter == m_lobbies.end())
     {
-        connectMessageResponse->set_error(JaegerErrorToProtobuf(JaegerNetError::LobbyNotFound));
+        response.set_error(static_cast<int32>(JaegerNetError::LobbyNotFound));
     }
     else
     {
@@ -72,12 +77,10 @@ void LobbyManager::HandleConnectRequest(IServer* const sender, MessageReceivedEv
         }
         catch (JaegerNetException& ex)
         {
-            connectMessageResponse->set_error(JaegerErrorToProtobuf(ex.Error()));
+            response.set_error(static_cast<int32>(ex.Error()));
         }
     }
 
-    JaegerNetResponse response;
     response.set_allocated_connectresponse(connectMessageResponse.release());
-
-    sender->Send(response);
+    return std::move(response);
 }
