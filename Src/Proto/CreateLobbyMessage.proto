@@ -8,5 +8,4 @@ message CreateLobbyRequest
 message CreateLobbyResponse
 {
     int32 LobbyId = 1;
-    int32 Error = 2;
 }

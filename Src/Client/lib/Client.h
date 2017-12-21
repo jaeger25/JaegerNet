@@ -2,19 +2,23 @@
 
 #include <cstddef>
 #include <functional>
+#include <map>
 #include <memory>
 #include <thread>
 #include <asio.hpp>
 #include "Constants.h"
+#include "ErrorCodes.h"
 #include "MessageHandler.h"
 #include "JaegerNet.pb.h"
 
 namespace JaegerNet
 {
+    typedef std::function<void(const JaegerNetResponse& response)> ResponseReceivedCallback;
+
     class IClient
     {
     public:
-        virtual void Send(const JaegerNetRequest& message) = 0;
+        virtual void Send(JaegerNetRequest& message, ResponseReceivedCallback&& callback) = 0;
         virtual void Run(bool runAsync) = 0;
     };
 
@@ -24,7 +28,7 @@ namespace JaegerNet
         Client(std::string hostName, std::string port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers);
         virtual ~Client();
 
-        virtual void Send(const JaegerNetRequest& message);
+        virtual void Send(JaegerNetRequest& message, ResponseReceivedCallback&& callback);
         virtual void Run(bool runAsync);
 
     private:
@@ -40,6 +44,7 @@ namespace JaegerNet
         std::array<std::byte, MaxPacketSize> m_receivedData;
         std::array<std::byte, MaxPacketSize> m_sentData;
         std::vector<std::unique_ptr<IMessageHandler>> m_messageHandlers;
+        std::map<uint64_t, ResponseReceivedCallback> m_responseCallbackMap;
     };
 
     extern void CreateClient(const char* const hostname, const char* port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers);

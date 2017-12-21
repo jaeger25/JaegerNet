@@ -9,12 +9,13 @@ public:
     void OnMessageReceived(IClient* const sender, MessageReceivedEventArgs& eventArgs) noexcept
     {
         auto message = eventArgs.Message;
+        auto error = message.error();
+        (error);
+
         if (message.has_createlobbyresponse())
         {
             auto createLobbyMessage = message.createlobbyresponse();
             auto lobbyId = createLobbyMessage.lobbyid();
-            auto error = createLobbyMessage.error();
-            (error);
 
             auto connectMessage = std::make_unique<ConnectRequest>();
             connectMessage->set_lobbyid(lobbyId);
@@ -22,16 +23,16 @@ public:
             JaegerNetRequest response;
             response.set_allocated_connectrequest(connectMessage.release());
 
-            sender->Send(response);
+            sender->Send(response, [](const JaegerNetResponse& /*response*/)
+            {
+            });
         }
         else
         {
             auto connectMessage = message.connectresponse();
             auto playerNum = connectMessage.playernumber();
-            auto error = connectMessage.error();
 
             (playerNum);
-            (error);
         }
     }
 };
@@ -47,7 +48,10 @@ int main(int /*argc*/, char** /*argv*/)
     JaegerNetRequest message;
     message.set_allocated_createlobbyrequest(createLobbyMessage.release());
 
-    client.Send(message);
+    client.Send(message, [](const JaegerNetResponse& /*response*/)
+    {
+    });
+
     client.Run(false);
 
     return 0;
