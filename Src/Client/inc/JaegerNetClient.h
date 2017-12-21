@@ -8,5 +8,8 @@ typedef void(*ConnectCallback)(int32_t playerNumber, JaegerNet::JaegerNetError e
 void JaegerNet_StartClient(const char* const hostname, const char* const port);
 void JaegerNet_StopClient(void);
 
+void JaegerNet_StartInputListener(void);
+void JaegerNet_StopInputListener(void);
+
 void JaegerNet_CreateLobby(CreateLobbyCallback callback);
 void JaegerNet_Connect(int32_t lobbyId, ConnectCallback callback);

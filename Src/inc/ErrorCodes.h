@@ -29,6 +29,10 @@ namespace JaegerNet
     };
 }
 
+#define FAIL_FAST() \
+    std::terminate(); \
+
+
 #define JAEGERNET_CATCH_RETURN() \
     catch(JaegerNet::JaegerNetException& ex) \
     { \
@@ -36,7 +40,7 @@ namespace JaegerNet
     } \
     catch (std::exception& /*ex*/) \
     { \
-        std::terminate(); \
+        FAIL_FAST() \
     } \
 
 #define JAEGERNET_CATCH_LOG() \
@@ -45,12 +49,12 @@ namespace JaegerNet
     } \
     catch (std::exception& /*ex*/) \
     { \
-        std::terminate(); \
+        FAIL_FAST() \
     } \
 
 #define FAIL_FAST_IF(conditional) \
     bool result = conditional; \
     if(result) \
     { \
-        std::terminate(); \
+        FAIL_FAST() \
     } \

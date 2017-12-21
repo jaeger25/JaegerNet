@@ -28,6 +28,7 @@ namespace JaegerNet
         Client(std::string hostName, std::string port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers);
         virtual ~Client();
 
+        // IClient
         virtual void Send(JaegerNetRequest& message, ResponseReceivedCallback&& callback);
         virtual void Run(bool runAsync);
 
@@ -49,5 +50,5 @@ namespace JaegerNet
 
     extern void CreateClient(const char* const hostname, const char* port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers);
     extern void DestroyClient(void);
-    extern IClient* const GetClient(void) noexcept;
+    extern std::shared_ptr<IClient> GetClient(void) noexcept;
 }

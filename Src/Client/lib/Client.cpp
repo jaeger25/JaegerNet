@@ -5,32 +5,28 @@
 using namespace asio;
 using namespace google::protobuf;
 using namespace JaegerNet;
-using namespace std;
 
 using asio::ip::udp;
 
 std::shared_mutex ClientLock;
-std::unique_ptr<IClient> ClientInstance;
-std::thread ClientServiceThread;
+std::shared_ptr<IClient> ClientInstance;
 
 void JaegerNet::CreateClient(const char* const hostname, const char* port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers)
 {
     std::lock_guard<std::shared_mutex> lock(ClientLock);
-
     ClientInstance = std::make_unique<Client>(hostname, port, std::move(messageHandlers));
 }
 
 void JaegerNet::DestroyClient(void)
 {
     std::lock_guard<std::shared_mutex> lock(ClientLock);
-
     ClientInstance.reset();
 }
 
-IClient* const JaegerNet::GetClient(void) noexcept
+std::shared_ptr<IClient> JaegerNet::GetClient(void) noexcept
 {
     std::shared_lock<std::shared_mutex> lock(ClientLock);
-    return ClientInstance.get();
+    return ClientInstance;;
 }
 
 Client::Client(std::string hostName, std::string port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers) :
@@ -115,6 +111,7 @@ void Client::OnDataReceived(const std::error_code& error, std::size_t bytesRecei
         if (responseCallbackIter != m_responseCallbackMap.end())
         {
             responseCallbackIter->second(message);
+            m_responseCallbackMap.erase(responseCallbackIter);
         }
 
         StartReceive();

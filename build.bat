@@ -5,5 +5,5 @@ if NOT EXIST ./build (
     goto :eof
 )
 
-start %COMSPEC% /k cmake --build build/x86-windows
-start %COMSPEC% /k cmake --build build/x64-windows
+start %COMSPEC% /k cmake --build build/x86-windows --config Release
+start %COMSPEC% /k cmake --build build/x64-windows --config Release

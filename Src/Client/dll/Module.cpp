@@ -1,5 +1,6 @@
 #include "JaegerNetClient.h"
 #include "Client.h"
+#include "InputListener.h"
 
 using namespace JaegerNet;
 
@@ -13,6 +14,19 @@ JAEGERNET_CATCH_LOG();
 void JaegerNet_StopClient(void) try
 {
     JaegerNet::DestroyClient();
+}
+JAEGERNET_CATCH_LOG();
+
+void JaegerNet_StartInputListener(void) try
+{
+    JaegerNet::CreateInputListener();
+    JaegerNet::GetInputListener()->Start();
+}
+JAEGERNET_CATCH_LOG();
+
+void JaegerNet_StopInputListener(void) try
+{
+    JaegerNet::DestroyInputListener();
 }
 JAEGERNET_CATCH_LOG();
 
