@@ -1,4 +1,5 @@
 #include "Client.h"
+#include <shared_mutex>
 
 using namespace asio;
 using namespace JaegerNet;
@@ -6,11 +7,36 @@ using namespace std;
 
 using asio::ip::udp;
 
-Client::Client(asio::io_service& service, std::string hostName, std::string port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers) :
-    m_socket(service, udp::endpoint(udp::v4(), 0)),
+std::shared_mutex ClientLock;
+std::unique_ptr<IClient> ClientInstance;
+std::thread ClientServiceThread;
+
+void JaegerNet::CreateClient(const char* const hostname, const char* port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers)
+{
+    std::lock_guard<std::shared_mutex> lock(ClientLock);
+
+    ClientInstance = std::make_unique<Client>(hostname, port, std::move(messageHandlers));
+}
+
+void JaegerNet::DestroyClient(void)
+{
+    std::lock_guard<std::shared_mutex> lock(ClientLock);
+
+    ClientInstance.reset();
+}
+
+IClient* const JaegerNet::GetClient(void) noexcept
+{
+    std::shared_lock<std::shared_mutex> lock(ClientLock);
+    return ClientInstance.get();
+}
+
+Client::Client(std::string hostName, std::string port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers) :
+    m_service(),
+    m_socket(m_service, udp::endpoint(udp::v4(), 0)),
     m_messageHandlers(std::move(messageHandlers))
 {
-    udp::resolver resolver(service);
+    udp::resolver resolver(m_service);
     m_endpoint = *resolver.resolve({ udp::v4(), hostName, port });
 
     StartReceive();
@@ -18,6 +44,8 @@ Client::Client(asio::io_service& service, std::string hostName, std::string port
 
 Client::~Client()
 {
+    m_service.stop();
+    m_serviceThread.join();
 }
 
 void Client::Send(const JaegerNetRequest& message)
@@ -33,6 +61,21 @@ void Client::Send(const JaegerNetRequest& message)
         std::bind(&Client::OnDataSent, this,
             std::placeholders::_1,
             std::placeholders::_2));
+}
+
+void Client::Run(bool runAsync)
+{
+    if (runAsync)
+    {
+        m_serviceThread = std::thread([this]
+        {
+            m_service.run();
+        });
+    }
+    else
+    {
+        m_service.run();
+    }
 }
 
 void Client::StartReceive()
