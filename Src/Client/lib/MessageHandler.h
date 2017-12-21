@@ -5,11 +5,11 @@
 
 namespace JaegerNet
 {
-    class IServer;
+    class IClient;
 
     struct MessageReceivedEventArgs
     {
-        const JaegerNetRequest& Message;
+        const JaegerNetResponse& Message;
     };
 
     class IMessageHandler
@@ -17,6 +17,6 @@ namespace JaegerNet
     public:
         virtual ~IMessageHandler() = default;
 
-        virtual void OnMessageReceived(IServer* const sender, MessageReceivedEventArgs& eventArgs) noexcept = 0;
+        virtual void OnMessageReceived(IClient* const sender, MessageReceivedEventArgs& eventArgs) noexcept = 0;
     };
 }

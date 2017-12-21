@@ -5,26 +5,24 @@
 #include <memory>
 #include <asio.hpp>
 #include "Constants.h"
+#include "MessageHandler.h"
 #include "JaegerNet.pb.h"
 
 namespace JaegerNet
 {
-    class IMessageHandler;
-
-    class IServer
+    class IClient
     {
     public:
-        virtual void Send(const JaegerNetResponse& message) = 0;
+        virtual void Send(const JaegerNetRequest& message) = 0;
     };
 
-    class Server : public IServer
+    class Client : public IClient
     {
     public:
-        Server(asio::io_service& service, short port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers);
-        virtual ~Server();
+        Client(asio::io_service& service, std::string hostName, std::string port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers);
+        virtual ~Client();
 
-        // IServer
-        virtual void Send(const JaegerNetResponse& message);
+        virtual void Send(const JaegerNetRequest& message);
 
     private:
         void StartReceive();
@@ -33,7 +31,8 @@ namespace JaegerNet
 
         asio::ip::udp::socket m_socket;
         asio::ip::udp::endpoint m_endpoint;
-        std::array<std::byte, MaxPacketSize> m_receievedData;
+        asio::ip::udp::endpoint m_serverEndpoint;
+        std::array<std::byte, MaxPacketSize> m_receivedData;
         std::array<std::byte, MaxPacketSize> m_sentData;
         std::vector<std::unique_ptr<IMessageHandler>> m_messageHandlers;
     };

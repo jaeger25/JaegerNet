@@ -1,11 +1,12 @@
 syntax = "proto3";
 package JaegerNet;
 
-message CreateLobbyMessage
+message CreateLobbyRequest
 {
-    // Request
+}
 
-    // Response
+message CreateLobbyResponse
+{
     int32 LobbyId = 1;
     int32 Error = 2;
 }

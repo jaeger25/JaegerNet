@@ -1,2 +1,5 @@
-add_library(ClientLib "ClientLib.cpp" "ClientLib.h")
+add_library(ClientLib
+    "Client.cpp" "Client.h"
+    "MessageHandler.h")
+
 cotire(ClientLib)
