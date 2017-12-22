@@ -1,9 +1,13 @@
 #pragma once
 #include <memory>
 #include <thread>
+#include <vector>
+#include <SDL2\SDL.h>
 
 namespace JaegerNet
 {
+    class IController;
+
     class IInputListener
     {
     public:
@@ -21,9 +25,14 @@ namespace JaegerNet
         virtual void Stop();
 
     private:
-        static void RunInputThread();
+        void RunInputThread();
+        void OnControllerAdded(const SDL_JoyDeviceEvent& deviceEvent);
+        void OnControllerRemoved(const SDL_JoyDeviceEvent& deviceEvent);
+        void OnControllerButtonChanged(const SDL_JoyButtonEvent& buttonEvent);
+        void OnControlerDPadButtonChanged(const SDL_JoyHatEvent& hatEvent);
 
         std::thread m_inputThread;
+        std::vector<std::unique_ptr<IController>> m_controllers;
     };
 
     extern void CreateInputListener(void);

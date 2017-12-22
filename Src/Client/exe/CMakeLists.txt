@@ -6,6 +6,7 @@ add_executable(ClientExe
 target_link_libraries(ClientExe
     ProtoLib
     ClientLib
+    SDL2::SDL2 SDL2::SDL2main
     ${PROTOBUF_LIBRARY})
 
 cotire(ClientExe)

@@ -17,7 +17,7 @@ void JaegerNet_StopClient(void) try
 }
 JAEGERNET_CATCH_LOG();
 
-void JaegerNet_StartInputListener(void) try
+void JaegerNet_StartInputListener() try
 {
     JaegerNet::CreateInputListener();
     JaegerNet::GetInputListener()->Start();
