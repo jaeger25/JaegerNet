@@ -1,4 +1,5 @@
 #include "Client.h"
+#include "InputListener.h"
 
 using namespace JaegerNet;
 using namespace std;
@@ -42,17 +43,21 @@ int main(int /*argc*/, char** /*argv*/)
     std::vector<std::unique_ptr<IMessageHandler>> messageHandlers;
     messageHandlers.emplace_back(std::make_unique<Test>());
 
-    Client client("127.0.0.1", "31337", std::move(messageHandlers));
+    JaegerNet::CreateClient("127.0.0.1", "31337", std::move(messageHandlers));
+    auto client = JaegerNet::GetClient();
 
     auto createLobbyMessage = std::make_unique<CreateLobbyRequest>();
     JaegerNetRequest message;
     message.set_allocated_createlobbyrequest(createLobbyMessage.release());
 
-    client.Send(message, [](const JaegerNetResponse& /*response*/)
+    client->Send(message, [](const JaegerNetResponse& /*response*/)
     {
     });
 
-    client.Run(false);
+    JaegerNet::CreateInputListener();
+    JaegerNet::GetInputListener()->Start();
+
+    client->Run(false);
 
     return 0;
 }
