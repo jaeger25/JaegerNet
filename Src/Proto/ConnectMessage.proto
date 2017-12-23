@@ -8,6 +8,15 @@ message ConnectRequest
 
 message ConnectResponse
 {
-    int32 LobbyId = 1;
+    int32 PlayerId = 1;
     int32 PlayerNumber = 2;
+}
+
+message DisconnectRequest
+{
+    int32 PlayerId = 2;
+}
+
+message DisconnectResponse
+{
 }

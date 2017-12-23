@@ -9,6 +9,7 @@ namespace JaegerNet
         MaxLobbiesExceeded,
         LobbyNotFound,
         LobbyCapacityExceeded,
+        ControllerNotFound,
     };
 
     class JaegerNetException : public std::exception
@@ -53,8 +54,10 @@ namespace JaegerNet
     } \
 
 #define FAIL_FAST_IF(conditional) \
+{ \
     bool result = conditional; \
     if(result) \
     { \
         FAIL_FAST() \
     } \
+} \

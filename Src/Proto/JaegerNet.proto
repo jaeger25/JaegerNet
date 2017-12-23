@@ -12,6 +12,7 @@ message JaegerNetRequest
     {
         CreateLobbyRequest CreateLobbyRequest = 2;
         ConnectRequest ConnectRequest = 3;
+        DisconnectRequest DisconnectRequest = 4;
     }
 }
 
@@ -24,5 +25,6 @@ message JaegerNetResponse
     {
         CreateLobbyResponse CreateLobbyResponse = 3;
         ConnectResponse ConnectResponse = 4;
+        DisconnectResponse DisconnectResponse = 5;
     }
 }

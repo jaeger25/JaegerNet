@@ -8,27 +8,6 @@ using namespace JaegerNet;
 
 using asio::ip::udp;
 
-std::shared_mutex ClientLock;
-std::shared_ptr<IClient> ClientInstance;
-
-void JaegerNet::CreateClient(const char* const hostname, const char* port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers)
-{
-    std::lock_guard<std::shared_mutex> lock(ClientLock);
-    ClientInstance = std::make_unique<Client>(hostname, port, std::move(messageHandlers));
-}
-
-void JaegerNet::DestroyClient(void)
-{
-    std::lock_guard<std::shared_mutex> lock(ClientLock);
-    ClientInstance.reset();
-}
-
-std::shared_ptr<IClient> JaegerNet::GetClient(void) noexcept
-{
-    std::shared_lock<std::shared_mutex> lock(ClientLock);
-    return ClientInstance;;
-}
-
 Client::Client(std::string hostName, std::string port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers) :
     m_service(),
     m_socket(m_service, udp::endpoint(udp::v4(), 0)),

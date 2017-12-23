@@ -1,6 +1,7 @@
 include_directories(../lib)
 
 add_executable(ClientExe
+    "Factory.cpp"
     "Module.cpp")
 
 target_link_libraries(ClientExe

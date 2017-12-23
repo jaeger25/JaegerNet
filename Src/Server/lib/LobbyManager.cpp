@@ -42,7 +42,7 @@ JaegerNetResponse&& LobbyManager::HandleCreateLobbyRequest(MessageReceivedEventA
 
     if (auto lobbyId = NextLobbyId++; lobbyId < MaxLobbies)
     {
-        std::lock_guard<std::shared_mutex> lock(m_lobbiesLock);
+        std::unique_lock<std::shared_mutex> lock(m_lobbiesLock);
 
         createLobbyResponse->set_lobbyid(lobbyId);
         m_lobbies.emplace(lobbyId, lobbyId);
@@ -73,6 +73,7 @@ JaegerNetResponse&& LobbyManager::HandleConnectRequest(MessageReceivedEventArgs&
         try
         {
             Player player = lobbyIter->second.AddPlayer();
+            connectMessageResponse->set_playerid(player.PlayerId());
             connectMessageResponse->set_playernumber(player.PlayerNumber());
         }
         catch (JaegerNetException& ex)

@@ -1,6 +1,7 @@
 include_directories(../lib)
 
 add_library(JaegerNetClient SHARED
+    "Factory.cpp"
     "Module.cpp")
 
 target_link_libraries(JaegerNetClient

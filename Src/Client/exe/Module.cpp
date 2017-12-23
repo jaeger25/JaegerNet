@@ -54,8 +54,15 @@ int main(int /*argc*/, char** /*argv*/)
     {
     });
 
-    JaegerNet::CreateInputListener();
-    JaegerNet::GetInputListener()->Start();
+    JaegerNet::CreateInputListener(
+        [](int /*controllerIndex*/)
+    {
+
+    },
+        [](int /*controllerIndex*/)
+    {
+
+    });
 
     client->Run(false);
 
