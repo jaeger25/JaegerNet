@@ -1,12 +1,14 @@
 #pragma once
 
 #include <map>
+#include <queue>
 #include <shared_mutex>
-#include <vector>
 #include "Player.h"
 
 namespace JaegerNet
 {
+    class Controller;
+
     class Lobby
     {
     public:
@@ -18,11 +20,15 @@ namespace JaegerNet
 
     private:
         Lobby();
+        void OnControllerAdded(int controllerIndex);
+        void OnControllerStateChanged(const Controller& controller);
 
         int32_t m_controllerAddedToken;
+        int32_t m_controllerStateChangedToken;
 
         std::shared_mutex m_playersLock;
         std::map<int32_t, Player> m_players;
-        std::map<int, bool> m_availableControllerIndexMap;
+        std::map<int, int32_t> m_controllerIndexToPlayerIdMap;
+        std::queue<int> m_availableControllerIndices;
     };
 }
