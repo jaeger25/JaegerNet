@@ -1,7 +1,6 @@
 #include "JaegerNetClient.h"
 
-//using namespace JaegerNet;
-using namespace std;
+using namespace JaegerNet;
 
 int main(int /*argc*/, char** /*argv*/)
 {
