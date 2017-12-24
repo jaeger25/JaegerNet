@@ -54,12 +54,10 @@ namespace JaegerNet
         void OnControllerAxisMotion(const SDL_JoyAxisEvent& axisEvent);
 
         std::thread m_inputThread;
-        ControllerAddedCallback m_controllerAddedCallback;
-        ControllerRemovedCallback m_controllerRemovedCallback;
 
         EventSource<int> m_controllerAddedEventSource;
         EventSource<int> m_controllerRemovedEventSource;
-        EventSource<int> m_controllerStateChangedEventSource;
+        EventSource<const Controller&> m_controllerStateChangedEventSource;
 
         std::shared_mutex m_controllersLock;
         std::vector<Controller> m_controllers;

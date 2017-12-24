@@ -5,11 +5,11 @@
 
 namespace JaegerNet
 {
-    template<typename Arg1, typename... ArgN>
+    template<typename... Args>
     class EventSource
     {
     public:
-        int32_t Add(std::function<void(Arg1, ArgN...)>&& callback)
+        int32_t Add(std::function<void(Args...)>&& callback)
         {
             std::lock_guard<std::mutex> lock(m_callbacksLock);
 
@@ -28,18 +28,18 @@ namespace JaegerNet
             m_callbacks.erase(token);
         }
 
-        void Invoke(Arg1 arg1, ArgN... args)
+        void Invoke(Args... args)
         {
             std::lock_guard<std::mutex> lock(m_callbacksLock);
 
             for (auto&& callback : m_callbacks)
             {
-                callback(arg1, args...);
+                callback.second(args...);
             }
         }
 
     private:
         std::mutex m_callbacksLock;
-        std::map<int32_t, std::function<void(Arg1, ArgN...)>> m_callbacks;
+        std::map<int32_t, std::function<void(Args...)>> m_callbacks;
     };
 }

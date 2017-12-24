@@ -34,6 +34,7 @@ namespace JaegerNet
     class Controller
     {
     public:
+        Controller() = default;
         Controller(int controllerIndex);
         ~Controller();
 

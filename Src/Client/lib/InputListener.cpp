@@ -39,10 +39,11 @@ constexpr ControllerButton SdlButtonToControllerButton(uint8_t button)
     }
 }
 
-InputListener::InputListener(ControllerAddedCallback&& controllerAddedCallback, ControllerRemovedCallback&& controllerRemovedCallback) :
-    m_controllerAddedCallback(controllerAddedCallback),
-    m_controllerRemovedCallback(controllerRemovedCallback)
+InputListener::InputListener(ControllerAddedCallback&& controllerAddedCallback, ControllerRemovedCallback&& controllerRemovedCallback)
 {
+    m_controllerAddedEventSource.Add(std::move(controllerAddedCallback));
+    m_controllerRemovedEventSource.Add(std::move(controllerRemovedCallback));
+
     m_inputThread = std::thread([this]
     {
         RunInputThread();
@@ -107,31 +108,51 @@ void InputListener::ControllerStateChanged(int32_t token)
 
 void InputListener::OnControllerAdded(const SDL_JoyDeviceEvent& deviceEvent)
 {
-    std::unique_lock<std::shared_mutex> lock(m_controllersLock);
+    {
+        std::unique_lock<std::shared_mutex> lock(m_controllersLock);
+        m_controllers.emplace_back(deviceEvent.which);
+    }
 
-    m_controllers.emplace_back(deviceEvent.which);
+    m_controllerAddedEventSource.Invoke(deviceEvent.which);
 }
 
 void InputListener::OnControllerRemoved(const SDL_JoyDeviceEvent& deviceEvent)
 {
-    std::unique_lock<std::shared_mutex> lock(m_controllersLock);
+    int controllerIndex = -1;
 
-    m_controllers.erase(std::find_if(m_controllers.begin(), m_controllers.end(), [deviceEvent](auto&& controller)
     {
-        return controller.InstanceId() == deviceEvent.which;
-    }));
+        std::unique_lock<std::shared_mutex> lock(m_controllersLock);
+
+        auto controllerIter = std::find_if(m_controllers.begin(), m_controllers.end(), [deviceEvent](auto&& controller)
+        {
+            return controller.InstanceId() == deviceEvent.which;
+        });
+
+        controllerIndex = controllerIter->Index();
+
+        m_controllers.erase(controllerIter);
+    }
+
+    m_controllerRemovedEventSource.Invoke(controllerIndex);
 }
 
 void InputListener::OnControllerButtonChanged(const SDL_JoyButtonEvent& buttonEvent)
 {
-    std::shared_lock<std::shared_mutex> lock(m_controllersLock);
+    Controller controller;
 
-    auto controllerIter = std::find_if(m_controllers.begin(), m_controllers.end(), [buttonEvent](auto&& controller)
     {
-        return controller.InstanceId() == buttonEvent.which;
-    });
+        std::shared_lock<std::shared_mutex> lock(m_controllersLock);
 
-    controllerIter->OnButtonStateChanged(SdlButtonToControllerButton(buttonEvent.button), buttonEvent.state == SDL_PRESSED);
+        auto controllerIter = std::find_if(m_controllers.begin(), m_controllers.end(), [buttonEvent](auto&& controller)
+        {
+            return controller.InstanceId() == buttonEvent.which;
+        });
+
+        controllerIter->OnButtonStateChanged(SdlButtonToControllerButton(buttonEvent.button), buttonEvent.state == SDL_PRESSED);
+        controller = *controllerIter;
+    }
+
+    m_controllerStateChangedEventSource.Invoke(controller);
 }
 
 void InputListener::OnControlerDPadButtonChanged(const SDL_JoyHatEvent& hatEvent)
