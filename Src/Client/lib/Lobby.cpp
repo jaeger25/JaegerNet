@@ -40,21 +40,20 @@ void Lobby::AddPlayer(int32_t playerId)
         throw JaegerNetException(JaegerNetError::ControllerNotFound);
     }
 
-    m_controllerIndexToPlayerIdMap[m_availableControllerIndices.front()] = playerId;
+    auto controllerIndex = m_availableControllerIndices.front();
     m_availableControllerIndices.pop();
 
-    m_players.emplace(playerId, playerId);
+    m_players.try_emplace(playerId, playerId, controllerIndex);
 }
 
 void Lobby::RemovePlayer(int32_t playerId)
 {
     std::unique_lock<std::shared_mutex> lock(m_playersLock);
 
-    auto iter = std::find(m_controllerIndexToPlayerIdMap.begin(), m_controllerIndexToPlayerIdMap.end(), playerId);
-    if (iter != m_controllerIndexToPlayerIdMap.end())
+    if (auto iter = m_players.find(playerId); iter != m_players.end())
     {
-        m_availableControllerIndices.push(iter->first);
-        m_controllerIndexToPlayerIdMap.erase(iter);
+        m_availableControllerIndices.push(iter->second.ControllerIndex());
+        m_players.erase(iter);
     }
 
     m_players.erase(playerId);
@@ -70,8 +69,12 @@ void Lobby::OnControllerStateChanged(const Controller& controller)
 {
     std::shared_lock<std::shared_mutex> lock(m_playersLock);
 
-    if (auto iter = m_controllerIndexToPlayerIdMap.find(controller.Index()); iter != m_controllerIndexToPlayerIdMap.end())
+    for (auto&& player : m_players)
     {
-        // TODO: send input request
+        if (player.second.ControllerIndex() == controller.Index())
+        {
+            player.second.OnControllerStateChanged(controller);
+            break;
+        }
     }
 }

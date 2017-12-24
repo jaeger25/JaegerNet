@@ -15,6 +15,7 @@ namespace JaegerNet
     {
     public:
         virtual void Send(const JaegerNetResponse& message) = 0;
+        virtual void Send(asio::ip::udp::endpoint& endpoint, const JaegerNetBroadcast& message) = 0;
     };
 
     class Server : public IServer
@@ -25,6 +26,7 @@ namespace JaegerNet
 
         // IServer
         virtual void Send(const JaegerNetResponse& message);
+        virtual void Send(asio::ip::udp::endpoint& endpoint, const JaegerNetBroadcast& message);
 
     private:
         void StartReceive();

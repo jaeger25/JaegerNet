@@ -1,11 +1,13 @@
 #include "Player.h"
 
+using namespace asio::ip;
 using namespace JaegerNet;
 using namespace std;
 
-Player::Player(int32_t playerId, int playerNumber) :
+Player::Player(int32_t playerId, int playerNumber, asio::ip::udp::endpoint&& endpoint) :
     m_playerId(playerId),
-    m_playerNumber(playerNumber)
+    m_playerNumber(playerNumber),
+    m_endpoint(std::move(endpoint))
 {
 }
 
@@ -21,4 +23,9 @@ int32_t Player::PlayerId() const
 int Player::PlayerNumber() const
 {
     return m_playerNumber;
+}
+
+void Player::Send(IServer* const server, const JaegerNetBroadcast& message)
+{
+    server->Send(m_endpoint, message);
 }

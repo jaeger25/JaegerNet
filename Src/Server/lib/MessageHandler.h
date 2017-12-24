@@ -9,6 +9,7 @@ namespace JaegerNet
 
     struct MessageReceivedEventArgs
     {
+        asio::ip::udp::endpoint Endpoint;
         const JaegerNetRequest& Message;
     };
 

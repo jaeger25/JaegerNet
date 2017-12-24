@@ -3,6 +3,7 @@ package JaegerNet;
 
 import "CreateLobbyMessage.proto";
 import "ConnectMessage.proto";
+import "ControllerInputMessage.proto";
 
 message JaegerNetRequest
 {
@@ -13,6 +14,7 @@ message JaegerNetRequest
         CreateLobbyRequest CreateLobbyRequest = 2;
         ConnectRequest ConnectRequest = 3;
         DisconnectRequest DisconnectRequest = 4;
+        ControllerInputRequest ControllerInputRequest = 5;
     }
 }
 
@@ -26,5 +28,16 @@ message JaegerNetResponse
         CreateLobbyResponse CreateLobbyResponse = 3;
         ConnectResponse ConnectResponse = 4;
         DisconnectResponse DisconnectResponse = 5;
+        ControllerInputResponse ControllerInputResponse = 6;
+    }
+}
+
+message JaegerNetBroadcast
+{
+    uint64 MessageId = 1;
+
+    oneof MessageType
+    {
+        ConnectBroadcast ConnectBroadcast = 2;
     }
 }

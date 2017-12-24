@@ -28,7 +28,6 @@ namespace JaegerNet
 
         std::shared_mutex m_playersLock;
         std::map<int32_t, Player> m_players;
-        std::map<int, int32_t> m_controllerIndexToPlayerIdMap;
         std::queue<int> m_availableControllerIndices;
     };
 }
