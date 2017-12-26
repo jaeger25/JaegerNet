@@ -22,7 +22,7 @@ void LobbyManager::OnMessageReceived(IServer* const sender, MessageReceivedEvent
     JaegerNetResponse response;
     if (eventArgs.Message.has_createlobbyrequest())
     {
-        response =HandleCreateLobbyRequest(sender, eventArgs);
+        response = HandleCreateLobbyRequest(sender, eventArgs);
     }
     else if (eventArgs.Message.has_connectrequest())
     {
@@ -37,9 +37,9 @@ void LobbyManager::OnMessageReceived(IServer* const sender, MessageReceivedEvent
     sender->Send(response);
 }
 
-JaegerNetResponse&& LobbyManager::HandleCreateLobbyRequest(IServer* const /*sender*/, MessageReceivedEventArgs& /*eventArgs*/) noexcept
+JaegerNetResponse LobbyManager::HandleCreateLobbyRequest(IServer* const /*sender*/, MessageReceivedEventArgs& /*eventArgs*/) noexcept
 {
-    static std::atomic_int32_t NextLobbyId = 0;
+    static std::atomic_int32_t NextLobbyId = 1;
 
     JaegerNetResponse response;
     auto createLobbyResponse = std::make_unique<CreateLobbyResponse>();
@@ -60,7 +60,7 @@ JaegerNetResponse&& LobbyManager::HandleCreateLobbyRequest(IServer* const /*send
     return std::move(response);
 }
 
-JaegerNetResponse&& LobbyManager::HandleConnectRequest(IServer* const sender, MessageReceivedEventArgs& eventArgs) noexcept
+JaegerNetResponse LobbyManager::HandleConnectRequest(IServer* const sender, MessageReceivedEventArgs& eventArgs) noexcept
 {
     std::shared_lock<std::shared_mutex> lock(m_lobbiesLock);
 
@@ -89,7 +89,7 @@ JaegerNetResponse&& LobbyManager::HandleConnectRequest(IServer* const sender, Me
     return std::move(response);
 }
 
-JaegerNetResponse&& LobbyManager::HandleControllerInputRequest(IServer* const /*sender*/, MessageReceivedEventArgs& /*eventArgs*/) noexcept
+JaegerNetResponse LobbyManager::HandleControllerInputRequest(IServer* const /*sender*/, MessageReceivedEventArgs& /*eventArgs*/) noexcept
 {
     JaegerNetResponse response;
 

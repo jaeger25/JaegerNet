@@ -25,7 +25,7 @@ int Player::PlayerNumber() const
     return m_playerNumber;
 }
 
-void Player::Send(IServer* const server, const JaegerNetBroadcast& message)
+void Player::Send(IServer* const server, JaegerNetBroadcast& message)
 {
     server->Send(m_endpoint, message);
 }

@@ -36,9 +36,10 @@ void Server::Send(const JaegerNetResponse& message)
             std::placeholders::_2));
 }
 
-void Server::Send(asio::ip::udp::endpoint& endpoint, const JaegerNetBroadcast& message)
+void Server::Send(asio::ip::udp::endpoint& endpoint, JaegerNetBroadcast& message)
 {
-    FAIL_FAST_IF(message.messageid() == 0);
+    static std::atomic_uint64_t NextMessageId = 1;
+    message.set_messageid(NextMessageId++);
 
     if (!message.SerializeToArray(&m_sentData, message.ByteSize()))
     {

@@ -13,7 +13,7 @@ namespace JaegerNet
         int32_t PlayerId() const;
         int PlayerNumber() const;
 
-        void Send(IServer* const server, const JaegerNetBroadcast& message);
+        void Send(IServer* const server, JaegerNetBroadcast& message);
 
     private:
         int32_t m_playerId;
