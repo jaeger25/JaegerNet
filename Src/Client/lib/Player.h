@@ -9,7 +9,14 @@ namespace JaegerNet
     {
     public:
         Player(int32_t playerId, int controllerIndex);
+        Player();
         ~Player();
+
+        int32_t PlayerId() const;
+        void PlayerId(int32_t playerId);
+
+        int32_t PlayerNumber() const;
+        void PlayerNumber(int32_t playerNumber);
 
         int ControllerIndex() const;
 
@@ -17,6 +24,7 @@ namespace JaegerNet
 
     private:
         int32_t m_playerId;
+        int32_t m_playerNumber;
         int m_controllerIndex;
     };
 }

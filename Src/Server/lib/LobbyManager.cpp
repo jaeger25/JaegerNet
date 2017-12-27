@@ -34,6 +34,7 @@ void LobbyManager::OnMessageReceived(IServer* const sender, MessageReceivedEvent
     }
 
     response.set_messageid(eventArgs.Message.messageid());
+    response.set_messagetype(JaegerNetMessageType::Response);
     sender->Send(response);
 }
 

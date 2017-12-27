@@ -18,13 +18,27 @@ int main(int /*argc*/, char** /*argv*/)
         cout << "Controller removed: " << controllerIndex << endl;
     });
 
-    JaegerNet_CreateLobby([](int lobbyId, JaegerNetError error)
+    JaegerNet_CreateLobby(
+        [](JaegerNetError error)
     {
-        cout << "CreateLobbyCallback: lobbyId: " << lobbyId << ", error: " << static_cast<int32_t>(error) << endl;
+        cout << "CreateLobby_ErrorCallback: Error: " << static_cast<int32_t>(error) << endl;
+    },
+        [](int32_t lobbyId)
+    {
+        cout << "CreateLobby_Callback: LobbyId: " << lobbyId << endl;
 
-        JaegerNet_Connect(lobbyId, [](int32_t playerId, int32_t playerNumber, JaegerNetError error)
+        JaegerNet_Connect(lobbyId,
+            [](JaegerNetError error)
         {
-            cout << "ConnectCallback: playerId: " << playerId << ", playerNumber: " << playerNumber << ", error: " << static_cast<int32_t>(error) << endl;
+            cout << "Connect_ErrorCallback: Error: " << static_cast<int32_t>(error) << endl;
+        },
+            [](int32_t playerNumber)
+        {
+            cout << "Connect_PlayerConnected" << playerNumber << endl;
+        },
+            [](int32_t playerNumber)
+        {
+            cout << "Connect_PlayerDisconnected" << playerNumber << endl;
         });
     });
 

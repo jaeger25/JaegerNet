@@ -2,6 +2,7 @@
 #include <atomic>
 #include <functional>
 #include <map>
+#include <mutex>
 
 namespace JaegerNet
 {

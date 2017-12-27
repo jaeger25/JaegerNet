@@ -7,7 +7,7 @@ using namespace JaegerNet;
 
 void JaegerNet_StartClient(const char* const hostname, const char* const port) try
 {
-    JaegerNet::CreateClient(hostname, port, {});
+    JaegerNet::CreateClient(hostname, port);
     JaegerNet::GetClient()->Run(true);
 }
 JAEGERNET_CATCH_LOG();
@@ -48,15 +48,14 @@ void JaegerNet_CreateLobby(JaegerNet_ErrorCallback errorCallback, JaegerNet_Lobb
         {
             lobbyCreatedCallback(lobbyId);
         }
-
     });
 }
 JAEGERNET_CATCH_LOG();
 
 void JaegerNet_Connect(int32_t lobbyId, JaegerNet_ErrorCallback errorCallback, JaegerNet_PlayerConnectedCallback playerConnectedCallback, JaegerNet_DisconnectedCallback playerDisconnectedCallback) try
 {
-    // hook up listeners
-    // callback(playerId, playerNumber, static_cast<JaegerNetError>(error));
+    Lobby::Instance().PlayerConnected(playerConnectedCallback);
+    Lobby::Instance().PlayerDisconnected(playerDisconnectedCallback);
 
     auto client = JaegerNet::GetClient();
 
@@ -74,7 +73,7 @@ void JaegerNet_Connect(int32_t lobbyId, JaegerNet_ErrorCallback errorCallback, J
 }
 JAEGERNET_CATCH_LOG();
 
-void JaegerNet_Disconnect(int controllerIndex, JaegerNet_ErrorCallback errorCallback) try
+void JaegerNet_Disconnect(int /*controllerIndex*/, JaegerNet_ErrorCallback errorCallback) try
 {
     auto client = JaegerNet::GetClient();
 

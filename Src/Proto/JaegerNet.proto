@@ -5,39 +5,50 @@ import "CreateLobbyMessage.proto";
 import "ConnectMessage.proto";
 import "ControllerInputMessage.proto";
 
+enum JaegerNetMessageType
+{
+    None = 0;
+    Request = 1;
+    Response = 2;
+    Broadcast = 3;
+}
+
 message JaegerNetRequest
 {
-    uint64 MessageId = 1;
+    JaegerNetMessageType MessageType = 1;
+    uint64 MessageId = 2;
 
-    oneof MessageType
+    oneof RequestType
     {
-        CreateLobbyRequest CreateLobbyRequest = 2;
-        ConnectRequest ConnectRequest = 3;
-        DisconnectRequest DisconnectRequest = 4;
-        ControllerInputRequest ControllerInputRequest = 5;
+        CreateLobbyRequest CreateLobbyRequest = 3;
+        ConnectRequest ConnectRequest = 4;
+        DisconnectRequest DisconnectRequest = 5;
+        ControllerInputRequest ControllerInputRequest = 6;
     }
 }
 
 message JaegerNetResponse
 {
-    uint64 MessageId = 1;
-    int32 Error = 2;
+    JaegerNetMessageType MessageType = 1;
+    uint64 MessageId = 2;
+    int32 Error = 3;
 
-    oneof MessageType
+    oneof ResponseType
     {
-        CreateLobbyResponse CreateLobbyResponse = 3;
-        ConnectResponse ConnectResponse = 4;
-        DisconnectResponse DisconnectResponse = 5;
-        ControllerInputResponse ControllerInputResponse = 6;
+        CreateLobbyResponse CreateLobbyResponse = 4;
+        ConnectResponse ConnectResponse = 5;
+        DisconnectResponse DisconnectResponse = 6;
+        ControllerInputResponse ControllerInputResponse = 7;
     }
 }
 
 message JaegerNetBroadcast
 {
-    uint64 MessageId = 1;
+    JaegerNetMessageType MessageType = 1;
+    uint64 MessageId = 2;
 
-    oneof MessageType
+    oneof BroadcastType
     {
-        ConnectBroadcast ConnectBroadcast = 2;
+        ConnectBroadcast ConnectBroadcast = 3;
     }
 }

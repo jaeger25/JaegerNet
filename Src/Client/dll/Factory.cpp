@@ -28,10 +28,10 @@ std::shared_ptr<IInputListener> JaegerNet::GetInputListener(void) noexcept
     return InputListenerInstance;
 }
 
-void JaegerNet::CreateClient(const char* const hostname, const char* port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers)
+void JaegerNet::CreateClient(const char* const hostname, const char* port)
 {
     std::unique_lock<std::shared_mutex> lock(ClientLock);
-    ClientInstance = std::make_unique<Client>(hostname, port, std::move(messageHandlers));
+    ClientInstance = std::make_unique<Client>(hostname, port);
 }
 
 void JaegerNet::DestroyClient(void)

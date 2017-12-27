@@ -1,6 +1,7 @@
 #include "Server.h"
 #include "ErrorCodes.h"
 #include "MessageHandler.h"
+#include <atomic>
 
 using namespace asio;
 using namespace JaegerNet;
@@ -40,6 +41,7 @@ void Server::Send(asio::ip::udp::endpoint& endpoint, JaegerNetBroadcast& message
 {
     static std::atomic_uint64_t NextMessageId = 1;
     message.set_messageid(NextMessageId++);
+    message.set_messagetype(JaegerNetMessageType::Broadcast);
 
     if (!message.SerializeToArray(&m_sentData, message.ByteSize()))
     {
