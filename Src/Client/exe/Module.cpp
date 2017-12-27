@@ -34,11 +34,11 @@ int main(int /*argc*/, char** /*argv*/)
         },
             [](int32_t playerNumber)
         {
-            cout << "Connect_PlayerConnected" << playerNumber << endl;
+            cout << "Connect_PlayerConnected: " << playerNumber << endl;
         },
             [](int32_t playerNumber)
         {
-            cout << "Connect_PlayerDisconnected" << playerNumber << endl;
+            cout << "Connect_PlayerDisconnected: " << playerNumber << endl;
         });
     });
 
