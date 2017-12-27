@@ -22,7 +22,7 @@ int main(int /*argc*/, char** /*argv*/)
     {
         cout << "CreateLobbyCallback: lobbyId: " << lobbyId << ", error: " << static_cast<int32_t>(error) << endl;
 
-        JaegerNet_Connect(lobbyId, [](int32_t playerId, int32_t playerNumber, JaegerNet::JaegerNetError error)
+        JaegerNet_Connect(lobbyId, [](int32_t playerId, int32_t playerNumber, JaegerNetError error)
         {
             cout << "ConnectCallback: playerId: " << playerId << ", playerNumber: " << playerNumber << ", error: " << static_cast<int32_t>(error) << endl;
         });

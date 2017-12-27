@@ -18,7 +18,7 @@ void JaegerNet_StopClient(void) try
 }
 JAEGERNET_CATCH_LOG();
 
-void JaegerNet_StartInputListener(::ControllerAddedCallback controllerAddedCallback, ::ControllerRemovedCallback controllerRemovedCallback) try
+void JaegerNet_StartInputListener(JaegerNet_ControllerAddedCallback controllerAddedCallback, JaegerNet_ControllerRemovedCallback controllerRemovedCallback) try
 {
     JaegerNet::CreateInputListener(controllerAddedCallback, controllerRemovedCallback);
 }
@@ -30,7 +30,7 @@ void JaegerNet_StopInputListener(void) try
 }
 JAEGERNET_CATCH_LOG();
 
-void JaegerNet_CreateLobby(CreateLobbyCallback callback) try
+void JaegerNet_CreateLobby(JaegerNet_ErrorCallback errorCallback, JaegerNet_LobbyCreatedCallback lobbyCreatedCallback) try
 {
     auto client = JaegerNet::GetClient();
 
@@ -38,18 +38,26 @@ void JaegerNet_CreateLobby(CreateLobbyCallback callback) try
     JaegerNetRequest request;
     request.set_allocated_createlobbyrequest(createLobbyRequest.release());
 
-    client->Send(request, [callback](const JaegerNetResponse& response)
+    client->Send(request, [errorCallback, lobbyCreatedCallback](const JaegerNetResponse& response)
     {
         auto error = static_cast<JaegerNetError>(response.error());
         auto lobbyId = response.createlobbyresponse().lobbyid();
 
-        callback(lobbyId, static_cast<JaegerNetError>(error));
+        errorCallback(error);
+        if (error == JaegerNetError::Success)
+        {
+            lobbyCreatedCallback(lobbyId);
+        }
+
     });
 }
 JAEGERNET_CATCH_LOG();
 
-void JaegerNet_Connect(int32_t lobbyId, ConnectCallback callback) try
+void JaegerNet_Connect(int32_t lobbyId, JaegerNet_ErrorCallback errorCallback, JaegerNet_PlayerConnectedCallback playerConnectedCallback, JaegerNet_DisconnectedCallback playerDisconnectedCallback) try
 {
+    // hook up listeners
+    // callback(playerId, playerNumber, static_cast<JaegerNetError>(error));
+
     auto client = JaegerNet::GetClient();
 
     auto connectRequest = std::make_unique<ConnectRequest>();
@@ -58,32 +66,28 @@ void JaegerNet_Connect(int32_t lobbyId, ConnectCallback callback) try
     JaegerNetRequest request;
     request.set_allocated_connectrequest(connectRequest.release());
 
-    client->Send(request, [callback](const JaegerNetResponse& response)
+    client->Send(request, [errorCallback](const JaegerNetResponse& response)
     {
-        auto error = response.error();
-        auto playerId = response.connectresponse().playerid();
-        auto playerNumber = response.connectresponse().playernumber();
-
-        callback(playerId, playerNumber, static_cast<JaegerNetError>(error));
+        auto error = static_cast<JaegerNetError>(response.error());
+        errorCallback(error);
     });
 }
 JAEGERNET_CATCH_LOG();
 
-void JaegerNet_Disconnect(int32_t playerId, DisconnectCallback callback) try
+void JaegerNet_Disconnect(int controllerIndex, JaegerNet_ErrorCallback errorCallback) try
 {
     auto client = JaegerNet::GetClient();
 
     auto disconnectRequest = std::make_unique<DisconnectRequest>();
-    disconnectRequest->set_playerid(playerId);
+    //disconnectRequest->set_playerid(playerId);
 
     JaegerNetRequest request;
     request.set_allocated_disconnectrequest(disconnectRequest.release());
 
-    client->Send(request, [callback](const JaegerNetResponse& response)
+    client->Send(request, [errorCallback](const JaegerNetResponse& response)
     {
-        auto error = response.error();
-
-        callback(static_cast<JaegerNetError>(error));
+        auto error = static_cast<JaegerNetError>(response.error());
+        errorCallback(error);
     });
 }
 JAEGERNET_CATCH_LOG();

@@ -9,7 +9,6 @@ message ConnectRequest
 message ConnectResponse
 {
     int32 PlayerId = 1;
-    int32 PlayerNumber = 2;
 }
 
 message ConnectBroadcast
