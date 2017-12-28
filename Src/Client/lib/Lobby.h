@@ -20,8 +20,6 @@ namespace JaegerNet
         static Lobby& Instance();
 
         ~Lobby();
-        void AddPlayer(int32_t playerId);
-        void RemovePlayer(int32_t playerId);
 
         int32_t PlayerConnected(PlayerConnectedCallback&& callback);
         void PlayerConnected(int32_t token);
