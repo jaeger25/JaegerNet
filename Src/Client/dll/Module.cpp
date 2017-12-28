@@ -20,7 +20,7 @@ JAEGERNET_CATCH_LOG();
 
 void JaegerNet_StartInputListener(JaegerNet_ControllerAddedCallback controllerAddedCallback, JaegerNet_ControllerRemovedCallback controllerRemovedCallback) try
 {
-    JaegerNet::CreateInputListener(controllerAddedCallback, controllerRemovedCallback);
+    JaegerNet::CreateInputListener(std::move(controllerAddedCallback), std::move(controllerRemovedCallback));
 }
 JAEGERNET_CATCH_LOG();
 
@@ -54,8 +54,8 @@ JAEGERNET_CATCH_LOG();
 
 void JaegerNet_Connect(int32_t lobbyId, JaegerNet_ErrorCallback errorCallback, JaegerNet_PlayerConnectedCallback playerConnectedCallback, JaegerNet_DisconnectedCallback playerDisconnectedCallback) try
 {
-    Lobby::Instance().PlayerConnected(playerConnectedCallback);
-    Lobby::Instance().PlayerDisconnected(playerDisconnectedCallback);
+    Lobby::Instance().PlayerConnected(std::move(playerConnectedCallback));
+    Lobby::Instance().PlayerDisconnected(std::move(playerDisconnectedCallback));
 
     auto client = JaegerNet::GetClient();
 

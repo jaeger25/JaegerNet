@@ -21,7 +21,7 @@ int Lobby::Id() const
     return m_id;
 }
 
-const Player& Lobby::OnConnectRequest(IServer* const server, asio::ip::udp::endpoint&& endpoint)
+Player Lobby::OnConnectRequest(IServer* const server, asio::ip::udp::endpoint&& endpoint)
 {
     std::unique_lock<std::shared_mutex> lock(m_playersLock);
 
@@ -32,20 +32,29 @@ const Player& Lobby::OnConnectRequest(IServer* const server, asio::ip::udp::endp
 
     static int32_t NextPlayerId = 1;
 
-    auto& newPlayer = m_players.emplace_back(NextPlayerId++, m_players.size() + 1, std::move(endpoint));
-
-    auto connectBroadcast = std::make_unique<ConnectBroadcast>();
-    connectBroadcast->set_playerid(newPlayer.PlayerId());
-    connectBroadcast->set_playernumber(newPlayer.PlayerNumber());
+    Player newPlayer(NextPlayerId++, m_players.size() + 1, std::move(endpoint));
 
     JaegerNetBroadcast broadcast;
-    broadcast.set_allocated_connectbroadcast(connectBroadcast.release());
+    auto connectBroadcast = std::make_unique<ConnectBroadcast>();
+    for (auto&& player : m_players)
+    {
+        connectBroadcast->set_playerid(player.PlayerId());
+        connectBroadcast->set_playernumber(player.PlayerNumber());
+
+        broadcast.set_allocated_connectbroadcast(connectBroadcast.get());
+        newPlayer.Send(server, broadcast);
+    }
+
+    connectBroadcast->set_playerid(newPlayer.PlayerId());
+    connectBroadcast->set_playernumber(newPlayer.PlayerNumber());
+    m_players.emplace_back(std::move(newPlayer));
 
     for (auto&& player : m_players)
     {
         player.Send(server, broadcast);
     }
 
+    broadcast.release_connectbroadcast();
     return newPlayer;
 }
 

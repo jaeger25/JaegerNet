@@ -19,7 +19,7 @@ namespace JaegerNet
 
         int Id() const;
 
-        const Player& OnConnectRequest(IServer* const server, asio::ip::udp::endpoint&& endpoint);
+        Player OnConnectRequest(IServer* const server, asio::ip::udp::endpoint&& endpoint);
         void OnControllerInputRequest(IServer* const server, const ControllerInputRequest& inputRequest);
 
     private:

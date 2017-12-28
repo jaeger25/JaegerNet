@@ -1,14 +1,15 @@
 #pragma once
 #include <stdint.h>
+#include <functional>
 #include "JaegerNetClient_Exports.h"
 #include "ErrorCodes.h"
 
-typedef void(*JaegerNet_ErrorCallback)(JaegerNet::JaegerNetError error);
-typedef void(*JaegerNet_LobbyCreatedCallback)(int32_t lobbyId);
-typedef void(*JaegerNet_PlayerConnectedCallback)(int32_t playerNumber);
-typedef void(*JaegerNet_DisconnectedCallback)(int32_t playerNumber);
-typedef void(*JaegerNet_ControllerAddedCallback)(int controllerIndex);
-typedef void(*JaegerNet_ControllerRemovedCallback)(int controllerIndex);
+typedef std::function<void(JaegerNet::JaegerNetError error)> JaegerNet_ErrorCallback;
+typedef std::function<void(int32_t lobbyId)> JaegerNet_LobbyCreatedCallback;
+typedef std::function<void(int32_t playerNumber)> JaegerNet_PlayerConnectedCallback;
+typedef std::function<void(int32_t playerNumber)> JaegerNet_DisconnectedCallback;
+typedef std::function<void(int controllerIndex)> JaegerNet_ControllerAddedCallback;
+typedef std::function<void(int controllerIndex)> JaegerNet_ControllerRemovedCallback;
 
 void JAEGERNET_EXPORT JaegerNet_StartClient(const char* const hostname, const char* const port);
 void JAEGERNET_EXPORT JaegerNet_StopClient(void);
