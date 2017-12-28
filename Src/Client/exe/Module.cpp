@@ -49,29 +49,29 @@ int main(int argc, char** argv)
 
     JaegerNet_StartClient(hostname.c_str(), port.c_str());
 
-    JaegerNet_StartInputListener(
-        [](int controllerIndex)
+    auto controllerAddedToken = JaegerNet_RegisterControllerAddedCallback([](int controllerIndex)
     {
         cout << "Controller added: " << controllerIndex << endl;
-    },
-        [](int controllerIndex)
+    });
+
+    auto controllerRemovedToken = JaegerNet_RegisterControllerRemovedCallback([](int controllerIndex)
     {
         cout << "Controller removed: " << controllerIndex << endl;
+    });
+
+    auto playerConnectedToken = JaegerNet_RegisterPlayerConnectedCallback([](int32_t playerNumber)
+    {
+        cout << "Connect_PlayerConnected: " << playerNumber << endl;
+    });
+
+    auto playerDisconnectedToken = JaegerNet_RegisterPlayerDisconnectedCallback([](int32_t playerNumber)
+    {
+        cout << "Connect_PlayerDisconnected: " << playerNumber << endl;
     });
 
     auto connectErrorCallback = [](JaegerNetError error)
     {
         cout << "Connect_ErrorCallback: Error: " << static_cast<int32_t>(error) << endl;
-    };
-
-    auto playerConnectedCallback = [](int32_t playerNumber)
-    {
-        cout << "Connect_PlayerConnected: " << playerNumber << endl;
-    };
-
-    auto playerDisconnectedCallback = [](int32_t playerNumber)
-    {
-        cout << "Connect_PlayerDisconnected: " << playerNumber << endl;
     };
 
     if (createLobby)
@@ -81,21 +81,25 @@ int main(int argc, char** argv)
         {
             cout << "CreateLobby_ErrorCallback: Error: " << static_cast<int32_t>(error) << endl;
         },
-            [connectErrorCallback, playerConnectedCallback, playerDisconnectedCallback](int32_t lobbyId)
+            [connectErrorCallback](int32_t lobbyId)
         {
             cout << "CreateLobby_Callback: LobbyId: " << lobbyId << endl;
 
-            JaegerNet_Connect(lobbyId, connectErrorCallback, playerConnectedCallback, playerDisconnectedCallback);
+            JaegerNet_Connect(lobbyId, connectErrorCallback);
         });
     }
     else
     {
-        JaegerNet_Connect(lobbyId, connectErrorCallback, playerConnectedCallback, playerDisconnectedCallback);
+        JaegerNet_Connect(lobbyId, connectErrorCallback);
     }
 
     getchar();
 
-    JaegerNet_StopInputListener();
+    JaegerNet_UnregisterControllerAddedCallback(controllerAddedToken);
+    JaegerNet_UnregisterControllerRemovedCallback(controllerRemovedToken);
+    JaegerNet_UnregisterPlayerConnectedCallback(playerConnectedToken);
+    JaegerNet_UnregisterPlayerDisconnectedCallback(playerDisconnectedToken);
+
     JaegerNet_StopClient();
 
     return 0;

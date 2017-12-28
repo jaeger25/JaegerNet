@@ -45,22 +45,22 @@ int Player::ControllerIndex() const
     return m_controllerIndex;
 }
 
-void Player::OnControllerStateChanged(const Controller& controller)
+void Player::OnControllerStateChanged(const Controller& /*controller*/)
 {
-    auto controllerInput = std::make_unique<ControllerInput>();
+    //auto controllerInput = std::make_unique<ControllerInput>();
 
-    controllerInput->set_axisvalue(controller.AxisValue());
-    controllerInput->set_controllerbuttonstate(static_cast<int32_t>(controller.ControllerButtonState()));
-    controllerInput->set_controllerdpadbuttonstate(static_cast<int32_t>(controller.ControllerDPadButtonState()));
-    controllerInput->set_playerid(m_playerId);
+    //controllerInput->set_axisvalue(controller.AxisValue());
+    //controllerInput->set_controllerbuttonstate(static_cast<int32_t>(controller.ControllerButtonState()));
+    //controllerInput->set_controllerdpadbuttonstate(static_cast<int32_t>(controller.ControllerDPadButtonState()));
+    //controllerInput->set_playerid(m_playerId);
 
-    auto inputRequest = std::make_unique<ControllerInputRequest>();
-    inputRequest->set_allocated_controllerinput(controllerInput.release());
+    //auto inputRequest = std::make_unique<ControllerInputRequest>();
+    //inputRequest->set_allocated_controllerinput(controllerInput.release());
 
-    JaegerNetRequest request;
-    request.set_allocated_controllerinputrequest(inputRequest.release());
+    //JaegerNetRequest request;
+    //request.set_allocated_controllerinputrequest(inputRequest.release());
 
-    GetClient()->Send(request, [](const JaegerNetResponse& /*response*/)
-    {
-    });
+    //GetClient()->Send(request, [](const JaegerNetResponse& /*response*/)
+    //{
+    //});
 }
