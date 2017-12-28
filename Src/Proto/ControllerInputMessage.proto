@@ -1,0 +1,21 @@
+syntax = "proto3";
+package JaegerNet;
+
+message ControllerInput
+{
+    int32 PlayerId = 1;
+    int32 AxisValue = 2;
+    int32 ControllerButtonState = 3;
+    int32 ControllerDPadButtonState = 4;
+}
+
+message ControllerInputRequest
+{
+    ControllerInput ControllerInput = 1;
+}
+
+message ControllerInputResponse
+{
+    int32 PlayerNumber = 1;
+    ControllerInput ControllerInput = 2;
+}

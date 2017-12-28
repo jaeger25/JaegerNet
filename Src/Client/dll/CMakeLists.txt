@@ -1,14 +1,15 @@
 include_directories(../lib)
-include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+include_directories("${CMAKE_BINARY_DIR}/exports")
 
 include(GenerateExportHeader)
 
 add_library(JaegerNetClient SHARED
+    "Factory.cpp"
     "Module.cpp")
 
 target_link_libraries(JaegerNetClient
-    ProtoLib
-    ClientLib
+    PRIVATE ProtoLib
+    PRIVATE ClientLib
     SDL2::SDL2 SDL2::SDL2main
     ${PROTOBUF_LIBRARY})
 

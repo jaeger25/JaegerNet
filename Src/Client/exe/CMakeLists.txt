@@ -1,4 +1,4 @@
-include_directories("${CMAKE_BINARY_DIR}/exports")
+include_directories(${CMAKE_BINARY_DIR}/exports)
 
 add_executable(ClientExe
     "Module.cpp")

@@ -1,29 +1,12 @@
 #include "InputListener.h"
-#include "Controller.h"
 #include "ErrorCodes.h"
 #include <shared_mutex>
 
 using namespace JaegerNet;
 
-std::shared_mutex InputListenerLock;
-std::shared_ptr<IInputListener> InputListenerInstance;
-
-void JaegerNet::CreateInputListener()
+constexpr ControllerDPadButton SdlHatToControllerDPadButton(uint8_t button)
 {
-    std::lock_guard<std::shared_mutex> lock(InputListenerLock);
-    InputListenerInstance = std::make_shared<InputListener>();
-}
-
-void JaegerNet::DestroyInputListener(void)
-{
-    std::lock_guard<std::shared_mutex> lock(InputListenerLock);
-    InputListenerInstance.reset();
-}
-
-std::shared_ptr<IInputListener> JaegerNet::GetInputListener(void) noexcept
-{
-    std::shared_lock<std::shared_mutex> lock(InputListenerLock);
-    return InputListenerInstance;
+    return static_cast<ControllerDPadButton>(button);
 }
 
 constexpr ControllerButton SdlButtonToControllerButton(uint8_t button)
@@ -56,19 +39,10 @@ constexpr ControllerButton SdlButtonToControllerButton(uint8_t button)
     }
 }
 
-InputListener::InputListener()
+InputListener::InputListener(ControllerAddedCallback&& controllerAddedCallback, ControllerRemovedCallback&& controllerRemovedCallback)
 {
-}
-
-InputListener::~InputListener()
-{
-    Stop();
-    m_inputThread.join();
-}
-
-void InputListener::Start()
-{
-    FAIL_FAST_IF(SDL_Init(SDL_INIT_JOYSTICK));
+    m_controllerAddedEventSource.Add(std::move(controllerAddedCallback));
+    m_controllerRemovedEventSource.Add(std::move(controllerRemovedCallback));
 
     m_inputThread = std::thread([this]
     {
@@ -76,52 +50,149 @@ void InputListener::Start()
     });
 }
 
-void InputListener::Stop()
+InputListener::~InputListener()
 {
     SDL_Quit();
+    m_inputThread.join();
+}
+
+const Controller InputListener::GetController(int controllerIndex)
+{
+    std::shared_lock<std::shared_mutex> lock(m_controllersLock);
+
+    for (auto&& controller : m_controllers)
+    {
+        if (controller.Index() == controllerIndex)
+        {
+            return controller;
+        }
+    }
+
+    throw JaegerNetException(JaegerNetError::ControllerNotFound);
+}
+
+int32_t InputListener::ControllerAdded(ControllerAddedCallback&& callback)
+{
+    for (auto&& controller : m_controllers)
+    {
+        callback(controller.Index());
+    }
+
+    return m_controllerAddedEventSource.Add(std::move(callback));
+}
+
+void InputListener::ControllerAdded(int32_t token)
+{
+    m_controllerAddedEventSource.Remove(token);
+}
+
+int32_t InputListener::ControllerRemoved(ControllerRemovedCallback&& callback)
+{
+    return m_controllerRemovedEventSource.Add(std::move(callback));
+}
+
+void InputListener::ControllerRemoved(int32_t token)
+{
+    m_controllerRemovedEventSource.Remove(token);
+}
+
+int32_t InputListener::ControllerStateChanged(ControllerStateChangedCallback&& callback)
+{
+    return m_controllerStateChangedEventSource.Add(std::move(callback));
+}
+
+void InputListener::ControllerStateChanged(int32_t token)
+{
+    m_controllerStateChangedEventSource.Remove(token);
 }
 
 void InputListener::OnControllerAdded(const SDL_JoyDeviceEvent& deviceEvent)
 {
-    m_controllers.emplace_back(std::make_unique<Controller>(deviceEvent.which));
+    {
+        std::unique_lock<std::shared_mutex> lock(m_controllersLock);
+        m_controllers.emplace_back(deviceEvent.which);
+    }
+
+    m_controllerAddedEventSource.Invoke(deviceEvent.which);
 }
 
 void InputListener::OnControllerRemoved(const SDL_JoyDeviceEvent& deviceEvent)
 {
-    m_controllers.erase(std::find_if(m_controllers.begin(), m_controllers.end(), [deviceEvent](auto&& controller)
+    int controllerIndex = -1;
+
     {
-        return controller->InstanceId() == deviceEvent.which;
-    }));
+        std::unique_lock<std::shared_mutex> lock(m_controllersLock);
+
+        auto controllerIter = std::find_if(m_controllers.begin(), m_controllers.end(), [deviceEvent](auto&& controller)
+        {
+            return controller.InstanceId() == deviceEvent.which;
+        });
+
+        controllerIndex = controllerIter->Index();
+
+        m_controllers.erase(controllerIter);
+    }
+
+    m_controllerRemovedEventSource.Invoke(controllerIndex);
 }
 
 void InputListener::OnControllerButtonChanged(const SDL_JoyButtonEvent& buttonEvent)
 {
-    auto controllerIter = std::find_if(m_controllers.begin(), m_controllers.end(), [buttonEvent](auto&& controller)
-    {
-        return controller->InstanceId() == buttonEvent.which;
-    });
+    Controller controller;
 
-    controllerIter->get()->OnButtonStateChanged(SdlButtonToControllerButton(buttonEvent.button), buttonEvent.state == SDL_PRESSED);
+    {
+        std::shared_lock<std::shared_mutex> lock(m_controllersLock);
+
+        auto controllerIter = std::find_if(m_controllers.begin(), m_controllers.end(), [buttonEvent](auto&& controller)
+        {
+            return controller.InstanceId() == buttonEvent.which;
+        });
+
+        controllerIter->OnButtonStateChanged(SdlButtonToControllerButton(buttonEvent.button), buttonEvent.state == SDL_PRESSED);
+        controller = *controllerIter;
+    }
+
+    m_controllerStateChangedEventSource.Invoke(controller);
 }
 
 void InputListener::OnControlerDPadButtonChanged(const SDL_JoyHatEvent& hatEvent)
 {
+    std::shared_lock<std::shared_mutex> lock(m_controllersLock);
+
     auto controllerIter = std::find_if(m_controllers.begin(), m_controllers.end(), [hatEvent](auto&& controller)
     {
-        return controller->InstanceId() == hatEvent.which;
+        return controller.InstanceId() == hatEvent.which;
     });
 
-    //controllerIter->get()->OnButtonStateChanged(SdlButtonToControllerButton(hatEvent), buttonEvent.state == SDL_PRESSED);
+    controllerIter->OnDPadButtonStateChanged(SdlHatToControllerDPadButton(hatEvent.value));
+}
+
+void InputListener::OnControllerAxisMotion(const SDL_JoyAxisEvent& axisEvent)
+{
+    std::shared_lock<std::shared_mutex> lock(m_controllersLock);
+
+    auto controllerIter = std::find_if(m_controllers.begin(), m_controllers.end(), [axisEvent](auto&& controller)
+    {
+        return controller.InstanceId() == axisEvent.which;
+    });
+
+    controllerIter->OnAxisMotion(axisEvent.value);
 }
 
 void InputListener::RunInputThread()
 {
+    FAIL_FAST_IF(SDL_Init(SDL_INIT_JOYSTICK));
+
     bool running = true;
 
     do
     {
         SDL_Event joystickEvent = {};
-        FAIL_FAST_IF(!SDL_WaitEvent(&joystickEvent));
+        if (!SDL_WaitEvent(&joystickEvent))
+        {
+            // TODO: log
+            running = false;
+        }
 
         switch (joystickEvent.type)
         {
@@ -139,6 +210,7 @@ void InputListener::RunInputThread()
             OnControllerButtonChanged(joystickEvent.jbutton);
             break;
         case SDL_EventType::SDL_JOYAXISMOTION:
+            OnControllerAxisMotion(joystickEvent.jaxis);
             break;
         case SDL_EventType::SDL_JOYHATMOTION:
             OnControlerDPadButtonChanged(joystickEvent.jhat);
@@ -148,4 +220,9 @@ void InputListener::RunInputThread()
         }
 
     } while (running);
+
+    {
+        std::unique_lock<std::shared_mutex> lock(m_controllersLock);
+        m_controllers.clear();
+    }
 }

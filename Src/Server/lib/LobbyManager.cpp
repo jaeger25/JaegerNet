@@ -22,27 +22,32 @@ void LobbyManager::OnMessageReceived(IServer* const sender, MessageReceivedEvent
     JaegerNetResponse response;
     if (eventArgs.Message.has_createlobbyrequest())
     {
-        response = HandleCreateLobbyRequest(eventArgs);
+        response = HandleCreateLobbyRequest(sender, eventArgs);
     }
     else if (eventArgs.Message.has_connectrequest())
     {
-        response = HandleConnectRequest(eventArgs);
+        response = HandleConnectRequest(sender, eventArgs);
+    }
+    else if (eventArgs.Message.has_controllerinputrequest())
+    {
+        response = HandleControllerInputRequest(sender, eventArgs);
     }
 
     response.set_messageid(eventArgs.Message.messageid());
+    response.set_messagetype(JaegerNetMessageType::Response);
     sender->Send(response);
 }
 
-JaegerNetResponse&& LobbyManager::HandleCreateLobbyRequest(MessageReceivedEventArgs& /*eventArgs*/) noexcept
+JaegerNetResponse LobbyManager::HandleCreateLobbyRequest(IServer* const /*sender*/, MessageReceivedEventArgs& /*eventArgs*/) noexcept
 {
-    static std::atomic_int32_t NextLobbyId = 0;
+    static std::atomic_int32_t NextLobbyId = 1;
 
     JaegerNetResponse response;
     auto createLobbyResponse = std::make_unique<CreateLobbyResponse>();
 
     if (auto lobbyId = NextLobbyId++; lobbyId < MaxLobbies)
     {
-        std::lock_guard<std::shared_mutex> lock(m_lobbiesLock);
+        std::unique_lock<std::shared_mutex> lock(m_lobbiesLock);
 
         createLobbyResponse->set_lobbyid(lobbyId);
         m_lobbies.emplace(lobbyId, lobbyId);
@@ -56,7 +61,7 @@ JaegerNetResponse&& LobbyManager::HandleCreateLobbyRequest(MessageReceivedEventA
     return std::move(response);
 }
 
-JaegerNetResponse&& LobbyManager::HandleConnectRequest(MessageReceivedEventArgs& eventArgs) noexcept
+JaegerNetResponse LobbyManager::HandleConnectRequest(IServer* const sender, MessageReceivedEventArgs& eventArgs) noexcept
 {
     std::shared_lock<std::shared_mutex> lock(m_lobbiesLock);
 
@@ -72,8 +77,8 @@ JaegerNetResponse&& LobbyManager::HandleConnectRequest(MessageReceivedEventArgs&
     {
         try
         {
-            Player player = lobbyIter->second.AddPlayer();
-            connectMessageResponse->set_playernumber(player.PlayerNumber());
+            auto player = lobbyIter->second.OnConnectRequest(sender, std::move(eventArgs.Endpoint));
+            m_playerIdToLobbyIdMap.emplace(lobbyId, player.PlayerId());
         }
         catch (JaegerNetException& ex)
         {
@@ -82,5 +87,15 @@ JaegerNetResponse&& LobbyManager::HandleConnectRequest(MessageReceivedEventArgs&
     }
 
     response.set_allocated_connectresponse(connectMessageResponse.release());
+    return std::move(response);
+}
+
+JaegerNetResponse LobbyManager::HandleControllerInputRequest(IServer* const /*sender*/, MessageReceivedEventArgs& /*eventArgs*/) noexcept
+{
+    JaegerNetResponse response;
+
+    auto controllerInputResponse = std::make_unique<ControllerInputResponse>();
+    response.set_allocated_controllerinputresponse(controllerInputResponse.release());
+
     return std::move(response);
 }

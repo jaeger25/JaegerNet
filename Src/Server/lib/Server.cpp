@@ -1,6 +1,7 @@
 #include "Server.h"
 #include "ErrorCodes.h"
 #include "MessageHandler.h"
+#include <atomic>
 
 using namespace asio;
 using namespace JaegerNet;
@@ -36,6 +37,25 @@ void Server::Send(const JaegerNetResponse& message)
             std::placeholders::_2));
 }
 
+void Server::Send(asio::ip::udp::endpoint& endpoint, JaegerNetBroadcast& message)
+{
+    static std::atomic_uint64_t NextMessageId = 1;
+    message.set_messageid(NextMessageId++);
+    message.set_messagetype(JaegerNetMessageType::Broadcast);
+
+    if (!message.SerializeToArray(&m_sentData, message.ByteSize()))
+    {
+        // TODO: log
+        return;
+    }
+
+    m_socket.async_send_to(
+        asio::buffer(m_sentData, message.ByteSize()), endpoint,
+        std::bind(&Server::OnDataSent, this,
+            std::placeholders::_1,
+            std::placeholders::_2));
+}
+
 void Server::StartReceive()
 {
     m_socket.async_receive_from(
@@ -56,7 +76,7 @@ void Server::OnDataReceived(const std::error_code& error, std::size_t bytesRecei
             return;
         }
 
-        auto args = MessageReceivedEventArgs{ message };
+        auto args = MessageReceivedEventArgs{ std::move(m_endpoint), message };
         for (auto&& handler : m_messageHandlers)
         {
             handler->OnMessageReceived(this, args);

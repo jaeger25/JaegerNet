@@ -1,4 +1,3 @@
-#include(sdl2)
 find_package(sdl2 REQUIRED)
 
 include_directories(inc)

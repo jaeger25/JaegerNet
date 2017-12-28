@@ -8,31 +8,9 @@ using namespace JaegerNet;
 
 using asio::ip::udp;
 
-std::shared_mutex ClientLock;
-std::shared_ptr<IClient> ClientInstance;
-
-void JaegerNet::CreateClient(const char* const hostname, const char* port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers)
-{
-    std::lock_guard<std::shared_mutex> lock(ClientLock);
-    ClientInstance = std::make_unique<Client>(hostname, port, std::move(messageHandlers));
-}
-
-void JaegerNet::DestroyClient(void)
-{
-    std::lock_guard<std::shared_mutex> lock(ClientLock);
-    ClientInstance.reset();
-}
-
-std::shared_ptr<IClient> JaegerNet::GetClient(void) noexcept
-{
-    std::shared_lock<std::shared_mutex> lock(ClientLock);
-    return ClientInstance;;
-}
-
-Client::Client(std::string hostName, std::string port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers) :
+Client::Client(std::string hostName, std::string port) :
     m_service(),
-    m_socket(m_service, udp::endpoint(udp::v4(), 0)),
-    m_messageHandlers(std::move(messageHandlers))
+    m_socket(m_service, udp::endpoint(udp::v4(), 0))
 {
     udp::resolver resolver(m_service);
     m_endpoint = *resolver.resolve({ udp::v4(), hostName, port });
@@ -50,6 +28,7 @@ void Client::Send(JaegerNetRequest& message, ResponseReceivedCallback&& callback
 {
     static std::atomic_uint64_t NextMessageId = 1;
     message.set_messageid(NextMessageId++);
+    message.set_messagetype(JaegerNetMessageType::Request);
 
     if (!message.SerializeToArray(&m_sentData, message.ByteSize()))
     {
@@ -81,6 +60,16 @@ void Client::Run(bool runAsync)
     }
 }
 
+int32_t Client::BroadcastReceived(BroadcastReceivedCallback&& callback)
+{
+    return m_broadcastReceivedEventSource.Add(std::move(callback));
+}
+
+void Client::BroadcastReceived(int32_t token)
+{
+    m_broadcastReceivedEventSource.Remove(token);
+}
+
 void Client::StartReceive()
 {
     m_socket.async_receive_from(
@@ -94,24 +83,23 @@ void Client::OnDataReceived(const std::error_code& error, std::size_t bytesRecei
 {
     if (!error || bytesReceived > 0)
     {
-        JaegerNetResponse message;
-        if (!message.ParseFromArray(m_receivedData.data(), static_cast<int>(bytesReceived)))
+        if (JaegerNetResponse message; message.ParseFromArray(m_receivedData.data(), static_cast<int>(bytesReceived)) && message.messagetype() == JaegerNetMessageType::Response)
         {
-            // TODO: log / handle
-            return;
+            auto responseCallbackIter = m_responseCallbackMap.find(message.messageid());
+            if (responseCallbackIter != m_responseCallbackMap.end())
+            {
+                responseCallbackIter->second(message);
+                m_responseCallbackMap.erase(responseCallbackIter);
+            }
         }
-
-        auto args = MessageReceivedEventArgs{ message };
-        for (auto&& handler : m_messageHandlers)
+        else if (JaegerNetBroadcast broadcast; broadcast.ParseFromArray(m_receivedData.data(), static_cast<int>(bytesReceived)) && message.messagetype() == JaegerNetMessageType::Broadcast)
         {
-            handler->OnMessageReceived(this, args);
+            auto args = BroadcastReceivedEventArgs{ broadcast };
+            m_broadcastReceivedEventSource.Invoke(args);
         }
-
-        auto responseCallbackIter = m_responseCallbackMap.find(message.messageid());
-        if (responseCallbackIter != m_responseCallbackMap.end())
+        else
         {
-            responseCallbackIter->second(message);
-            m_responseCallbackMap.erase(responseCallbackIter);
+            // TODO: Log
         }
 
         StartReceive();

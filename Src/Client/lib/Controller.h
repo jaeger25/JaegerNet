@@ -31,31 +31,28 @@ namespace JaegerNet
         Start = 0x200,
     };
 
-    class IController
+    class Controller
     {
     public:
-        virtual int32_t InstanceId() const = 0;
-        virtual bool AreButtonsPressed(ControllerButton button) const = 0;
-        virtual bool AreDPadButtonsPressed(ControllerDPadButton button) const = 0;
-        virtual void OnButtonStateChanged(ControllerButton button, bool pressed) = 0;
-        virtual void OnDPadButtonStateChanged(ControllerDPadButton buttonStates) = 0;
-    };
-
-    class Controller : public IController
-    {
-    public:
+        Controller() = default;
         Controller(int controllerIndex);
-        virtual ~Controller();
+        ~Controller();
 
-        // IController
         virtual int32_t InstanceId() const;
-        virtual bool AreButtonsPressed(ControllerButton button) const;
-        virtual bool AreDPadButtonsPressed(ControllerDPadButton button) const;
+        virtual int32_t Index() const;
+
+        virtual int16_t AxisValue() const;
+        virtual ControllerButton ControllerButtonState() const;
+        virtual ControllerDPadButton ControllerDPadButtonState() const;
+
         virtual void OnButtonStateChanged(ControllerButton buttonStates, bool pressed);
         virtual void OnDPadButtonStateChanged(ControllerDPadButton buttonStates);
+        virtual void OnAxisMotion(int16_t value);
 
     private:
         int32_t m_instanceId;
+        int32_t m_index;
+        int16_t m_axisValue = 0;
         uint16_t m_buttonStates = 0;
         uint8_t m_dpadButtonStates = 0;
         unique_any<SDL_Joystick> m_joystick;
