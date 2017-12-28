@@ -4,9 +4,9 @@ using namespace JaegerNet;
 
 Controller::Controller(int controllerIndex)
 {
-    m_joystick.reset(SDL_JoystickOpen(controllerIndex), [this](SDL_Joystick* joystick)
+    m_joystick.reset(SDL_JoystickOpen(controllerIndex), [instanceId = m_instanceId](SDL_Joystick* joystick)
     {
-        if (SDL_JoystickFromInstanceID(m_instanceId))
+        if (SDL_JoystickFromInstanceID(instanceId))
         {
             SDL_JoystickClose(joystick);
         }
