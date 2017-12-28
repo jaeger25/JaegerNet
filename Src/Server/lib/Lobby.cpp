@@ -1,5 +1,6 @@
 #include "Lobby.h"
 #include "Server.h"
+#include "ConnectMessage.pb.h"
 #include "JaegerNet.pb.h"
 
 using namespace JaegerNet;
@@ -33,28 +34,24 @@ Player Lobby::OnConnectRequest(IServer* const server, asio::ip::udp::endpoint&& 
     static int32_t NextPlayerId = 1;
 
     Player newPlayer(NextPlayerId++, m_players.size() + 1, std::move(endpoint));
+    m_players.emplace_back(std::move(newPlayer));
 
-    JaegerNetBroadcast broadcast;
     auto connectBroadcast = std::make_unique<ConnectBroadcast>();
     for (auto&& player : m_players)
     {
-        connectBroadcast->set_playerid(player.PlayerId());
-        connectBroadcast->set_playernumber(player.PlayerNumber());
+        auto playerInfo = connectBroadcast->add_playerinfo();
 
-        broadcast.set_allocated_connectbroadcast(connectBroadcast.get());
-        newPlayer.Send(server, broadcast);
+        playerInfo->set_playerid(player.PlayerId());
+        playerInfo->set_playernumber(player.PlayerNumber());
     }
 
-    connectBroadcast->set_playerid(newPlayer.PlayerId());
-    connectBroadcast->set_playernumber(newPlayer.PlayerNumber());
-    m_players.emplace_back(std::move(newPlayer));
-
+    JaegerNetBroadcast broadcast;
+    broadcast.set_allocated_connectbroadcast(connectBroadcast.release());
     for (auto&& player : m_players)
     {
         player.Send(server, broadcast);
     }
 
-    broadcast.release_connectbroadcast();
     return newPlayer;
 }
 

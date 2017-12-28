@@ -64,34 +64,6 @@ void Lobby::PlayerDisconnected(int32_t token)
     m_playerDisconnectedEventSource.Remove(token);
 }
 
-void Lobby::AddPlayer(int32_t playerId)
-{
-    std::unique_lock<std::shared_mutex> lock(m_playersLock);
-
-    if (m_availableControllerIndices.empty())
-    {
-        throw JaegerNetException(JaegerNetError::ControllerNotFound);
-    }
-
-    auto controllerIndex = m_availableControllerIndices.front();
-    m_availableControllerIndices.pop();
-
-    m_players.try_emplace(playerId, playerId, controllerIndex);
-}
-
-void Lobby::RemovePlayer(int32_t playerId)
-{
-    std::unique_lock<std::shared_mutex> lock(m_playersLock);
-
-    if (auto iter = m_players.find(playerId); iter != m_players.end())
-    {
-        m_availableControllerIndices.push(iter->second.ControllerIndex());
-        m_players.erase(iter);
-    }
-
-    m_players.erase(playerId);
-}
-
 void Lobby::OnControllerAdded(int controllerIndex)
 {
     std::unique_lock<std::shared_mutex> lock(m_playersLock);
@@ -117,25 +89,37 @@ void Lobby::OnBroadcastReceived(const BroadcastReceivedEventArgs& args)
     if (args.Broadcast.has_connectbroadcast())
     {
         auto connectBroadcast = args.Broadcast.connectbroadcast();
+        std::vector<int32_t> newPlayers;
 
         {
             std::unique_lock<std::shared_mutex> lock(m_playersLock);
 
-            auto playerIter = m_players.find(connectBroadcast.playerid());
-            if (playerIter == m_players.end())
+            for (auto&& playerInfo : connectBroadcast.playerinfo())
             {
-                Player player;
-                player.PlayerId(connectBroadcast.playerid());
-                player.PlayerNumber(connectBroadcast.playernumber());
+                auto playerIter = m_players.find(playerInfo.playerid());
+                if (playerIter == m_players.end())
+                {
+                    Player player;
+                    player.PlayerId(playerInfo.playerid());
+                    player.PlayerNumber(playerInfo.playernumber());
 
-                m_players.emplace(connectBroadcast.playerid(), std::move(player));
-            }
-            else
-            {
-                playerIter->second.PlayerNumber(connectBroadcast.playernumber());
+                    m_players.emplace(playerInfo.playerid(), std::move(player));
+                    newPlayers.push_back(player.PlayerNumber());
+                }
+                else
+                {
+                    if (playerIter->second.PlayerNumber() != playerInfo.playernumber())
+                    {
+                        playerIter->second.PlayerNumber(playerInfo.playernumber());
+                        newPlayers.push_back(playerInfo.playernumber());
+                    }
+                }
             }
         }
 
-        m_playerConnectedEventSource.Invoke(connectBroadcast.playernumber());
+        for (auto&& playerNumber : newPlayers)
+        {
+            m_playerConnectedEventSource.Invoke(playerNumber);
+        }
     }
 }
