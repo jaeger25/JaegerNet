@@ -31,6 +31,13 @@ namespace JaegerNet
         Start = 0x200,
     };
 
+    struct ControllerState
+    {
+        int16_t AxisValue;
+        ControllerButton ButtonState;
+        ControllerDPadButton DPadButtonState;
+    };
+
     class Controller
     {
     public:
@@ -38,16 +45,14 @@ namespace JaegerNet
         Controller(int controllerIndex);
         ~Controller();
 
-        virtual int32_t InstanceId() const;
-        virtual int32_t Index() const;
+        int32_t InstanceId() const;
+        int32_t Index() const;
 
-        virtual int16_t AxisValue() const;
-        virtual ControllerButton ControllerButtonState() const;
-        virtual ControllerDPadButton ControllerDPadButtonState() const;
+        const ControllerState CurrentState() const;
 
-        virtual void OnButtonStateChanged(ControllerButton buttonStates, bool pressed);
-        virtual void OnDPadButtonStateChanged(ControllerDPadButton buttonStates);
-        virtual void OnAxisMotion(int16_t value);
+        void OnButtonStateChanged(ControllerButton buttonStates, bool pressed);
+        void OnDPadButtonStateChanged(ControllerDPadButton buttonStates);
+        void OnAxisMotion(int16_t value);
 
     private:
         int32_t m_instanceId;

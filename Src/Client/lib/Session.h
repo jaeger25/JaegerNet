@@ -7,8 +7,8 @@ namespace JaegerNet
 {
     struct SessionDetails
     {
-        const std::string Hostname;
-        const std::string Port;
+        std::string Hostname;
+        std::string Port;
     };
 
     class Session
@@ -28,8 +28,8 @@ namespace JaegerNet
         int32_t m_controllerStateChangedToken;
         int32_t m_broadcastReceivedToken;
 
+        JaegerNet::Client m_client;
         JaegerNet::InputListener m_inputListener;
         JaegerNet::Lobby m_lobby;
-        JaegerNet::Client m_client;
     };
 }

@@ -27,4 +27,4 @@ void JAEGERNET_EXPORT JaegerNet_UnregisterPlayerConnectedCallback(EventRegistrat
 void JAEGERNET_EXPORT JaegerNet_UnregisterPlayerDisconnectedCallback(EventRegistrationToken token);
 
 void JAEGERNET_EXPORT JaegerNet_CreateLobby(JaegerNet_ErrorCallback errorCallback, JaegerNet_LobbyCreatedCallback lobbyCreatedCallback);
-void JAEGERNET_EXPORT JaegerNet_Connect(int32_t lobbyId, JaegerNet_ErrorCallback errorCallback);
+void JAEGERNET_EXPORT JaegerNet_Connect(int32_t lobbyId, int controllerIndex, JaegerNet_ErrorCallback errorCallback);

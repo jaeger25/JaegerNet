@@ -12,6 +12,7 @@ int main(int argc, char** argv)
     std::string port;
     bool createLobby = false;
     int32_t lobbyId = 0;
+    int controllerIndex = 0;
 
     try
     {
@@ -22,6 +23,9 @@ int main(int argc, char** argv)
         cmdLine.add(hostnameArg);
         cmdLine.add(portArg);
 
+        TCLAP::ValueArg<int> controllerIndexArg("", "controllerindex", "Index (starting at 0) of the controller to use for input", false, 0, "int");
+        cmdLine.add(controllerIndexArg);
+
         TCLAP::ValueArg<int32_t> lobbyIdArg("", "lobbyid", "LobbyId to try and connect to", true, 0, "int");
         TCLAP::SwitchArg createLobbySwitch("", "createlobby", "Switch which indicates a new lobby should be created", false);
         cmdLine.xorAdd(lobbyIdArg, createLobbySwitch);
@@ -30,6 +34,7 @@ int main(int argc, char** argv)
 
         hostname = hostnameArg.getValue();
         port = portArg.getValue();
+        controllerIndex = controllerIndexArg.getValue();
 
         if (lobbyIdArg.isSet())
         {
@@ -81,16 +86,16 @@ int main(int argc, char** argv)
         {
             cout << "CreateLobby_ErrorCallback: Error: " << static_cast<int32_t>(error) << endl;
         },
-            [connectErrorCallback](int32_t lobbyId)
+            [connectErrorCallback, controllerIndex](int32_t lobbyId)
         {
             cout << "CreateLobby_Callback: LobbyId: " << lobbyId << endl;
 
-            JaegerNet_Connect(lobbyId, connectErrorCallback);
+            JaegerNet_Connect(lobbyId, controllerIndex, connectErrorCallback);
         });
     }
     else
     {
-        JaegerNet_Connect(lobbyId, connectErrorCallback);
+        JaegerNet_Connect(lobbyId, controllerIndex, connectErrorCallback);
     }
 
     getchar();

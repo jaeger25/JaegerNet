@@ -37,7 +37,7 @@ void JaegerNet_CreateLobby(JaegerNet_ErrorCallback errorCallback, JaegerNet_Lobb
     });
 }
 
-void JaegerNet_Connect(int32_t lobbyId, JaegerNet_ErrorCallback errorCallback)
+void JaegerNet_Connect(int32_t lobbyId, int controllerIndex, JaegerNet_ErrorCallback errorCallback)
 {
     auto connectRequest = std::make_unique<ConnectRequest>();
     connectRequest->set_lobbyid(lobbyId);
@@ -45,10 +45,14 @@ void JaegerNet_Connect(int32_t lobbyId, JaegerNet_ErrorCallback errorCallback)
     JaegerNetRequest request;
     request.set_allocated_connectrequest(connectRequest.release());
 
-    JaegerNetClientSession->Client().Send(request, [errorCallback](const JaegerNetResponse& response)
+    JaegerNetClientSession->Client().Send(request, [controllerIndex, errorCallback](const JaegerNetResponse& response)
     {
         auto error = static_cast<JaegerNetError>(response.error());
         errorCallback(error);
+        if (error == JaegerNetError::Success)
+        {
+            JaegerNetClientSession->Lobby().BindPlayerToController(response.connectresponse().playerid(), controllerIndex);
+        }
     });
 }
 

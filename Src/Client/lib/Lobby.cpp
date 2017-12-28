@@ -6,12 +6,18 @@
 
 using namespace JaegerNet;
 
-Lobby::Lobby()
+Lobby::Lobby(Client& client) :
+    m_client(client)
 {
 }
 
 Lobby::~Lobby()
 {
+}
+
+void Lobby::BindPlayerToController(int32_t playerId, int controllerIndex)
+{
+    m_controllerIndexToPlayerIdMap[controllerIndex] = playerId;
 }
 
 int32_t Lobby::PlayerConnected(PlayerConnectedCallback&& callback)
@@ -38,14 +44,25 @@ void Lobby::OnControllerStateChanged(const Controller& controller)
 {
     std::shared_lock<std::shared_mutex> lock(m_playersLock);
 
-    for (auto&& player : m_players)
+    auto playerId = m_controllerIndexToPlayerIdMap[controller.Index()];
+    auto controllerState = controller.CurrentState();
+
+    auto controllerInput = std::make_unique<ControllerInput>();
+
+    controllerInput->set_axisvalue(controllerState.AxisValue);
+    controllerInput->set_controllerbuttonstate(static_cast<int32_t>(controllerState.ButtonState));
+    controllerInput->set_controllerdpadbuttonstate(static_cast<int32_t>(controllerState.DPadButtonState));
+    controllerInput->set_playerid(playerId);
+
+    auto inputRequest = std::make_unique<ControllerInputRequest>();
+    inputRequest->set_allocated_controllerinput(controllerInput.release());
+
+    JaegerNetRequest request;
+    request.set_allocated_controllerinputrequest(inputRequest.release());
+
+    m_client.Send(request, [](const JaegerNetResponse& /*response*/)
     {
-        if (player.second.ControllerIndex() == controller.Index())
-        {
-            player.second.OnControllerStateChanged(controller);
-            break;
-        }
-    }
+    });
 }
 
 void Lobby::OnBroadcastReceived(const BroadcastReceivedEventArgs& args)

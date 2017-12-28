@@ -1,14 +1,11 @@
 #pragma once
-#include <memory>
 
 namespace JaegerNet
 {
-    class Controller;
-
     class Player
     {
     public:
-        Player(int32_t playerId, int controllerIndex);
+        Player(int32_t playerId);
         Player();
         ~Player();
 
@@ -18,13 +15,8 @@ namespace JaegerNet
         int32_t PlayerNumber() const;
         void PlayerNumber(int32_t playerNumber);
 
-        int ControllerIndex() const;
-
-        void OnControllerStateChanged(const Controller& controller);
-
     private:
         int32_t m_playerId;
         int32_t m_playerNumber;
-        int m_controllerIndex;
     };
 }
