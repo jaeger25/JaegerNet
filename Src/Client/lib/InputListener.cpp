@@ -39,11 +39,8 @@ constexpr ControllerButton SdlButtonToControllerButton(uint8_t button)
     }
 }
 
-InputListener::InputListener(ControllerAddedCallback&& controllerAddedCallback, ControllerRemovedCallback&& controllerRemovedCallback)
+InputListener::InputListener()
 {
-    m_controllerAddedEventSource.Add(std::move(controllerAddedCallback));
-    m_controllerRemovedEventSource.Add(std::move(controllerRemovedCallback));
-
     m_inputThread = std::thread([this]
     {
         RunInputThread();
@@ -73,9 +70,20 @@ const Controller InputListener::GetController(int controllerIndex)
 
 int32_t InputListener::ControllerAdded(ControllerAddedCallback&& callback)
 {
-    for (auto&& controller : m_controllers)
+    std::vector<int> controllerIndices;
+
     {
-        callback(controller.Index());
+        std::shared_lock<std::shared_mutex> lock(m_controllersLock);
+
+        for (auto&& controller : m_controllers)
+        {
+            controllerIndices.push_back(controller.Index());
+        }
+    }
+
+    for (auto&& index : controllerIndices)
+    {
+        callback(index);
     }
 
     return m_controllerAddedEventSource.Add(std::move(callback));

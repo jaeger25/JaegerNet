@@ -22,27 +22,17 @@ namespace JaegerNet
     typedef std::function<void(const JaegerNetResponse& response)> ResponseReceivedCallback;
     typedef std::function<void(const BroadcastReceivedEventArgs& args)> BroadcastReceivedCallback;
 
-    class IClient
-    {
-    public:
-        virtual void Send(JaegerNetRequest& message, ResponseReceivedCallback&& callback) = 0;
-        virtual void Run(bool runAsync) = 0;
-
-        virtual int32_t BroadcastReceived(BroadcastReceivedCallback&& callback) = 0;
-        virtual void BroadcastReceived(int32_t token) = 0;
-    };
-
-    class Client : public IClient
+    class Client
     {
     public:
         Client(std::string hostName, std::string port);
-        virtual ~Client();
+        ~Client();
 
-        virtual void Send(JaegerNetRequest& message, ResponseReceivedCallback&& callback);
-        virtual void Run(bool runAsync);
+        void Send(JaegerNetRequest& message, ResponseReceivedCallback&& callback);
+        void Run(bool runAsync);
 
-        virtual int32_t BroadcastReceived(BroadcastReceivedCallback&& callback);
-        virtual void BroadcastReceived(int32_t token);
+        int32_t BroadcastReceived(BroadcastReceivedCallback&& callback);
+        void BroadcastReceived(int32_t token);
 
     private:
         void StartReceive();
@@ -60,8 +50,4 @@ namespace JaegerNet
         std::array<std::byte, MaxPacketSize> m_sentData;
         std::map<uint64_t, ResponseReceivedCallback> m_responseCallbackMap;
     };
-
-    extern void CreateClient(const char* const hostname, const char* port);
-    extern void DestroyClient(void);
-    extern std::shared_ptr<IClient> GetClient(void) noexcept;
 }

@@ -3,6 +3,7 @@ add_library(ClientLib
     "Controller.cpp" "Controller.h"
     "InputListener.cpp" "InputListener.h"
     "Lobby.cpp" "Lobby.h"
-    "Player.cpp" "Player.h")
+    "Player.cpp" "Player.h"
+    "Session.cpp" "Session.h")
 
 cotire(ClientLib)

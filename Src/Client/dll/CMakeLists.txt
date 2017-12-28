@@ -4,7 +4,6 @@ include_directories("${CMAKE_BINARY_DIR}/exports")
 include(GenerateExportHeader)
 
 add_library(JaegerNetClient SHARED
-    "Factory.cpp"
     "Module.cpp")
 
 target_link_libraries(JaegerNetClient
