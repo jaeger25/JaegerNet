@@ -4,7 +4,13 @@ using namespace JaegerNet;
 
 Controller::Controller(int controllerIndex)
 {
-    m_joystick.reset(SDL_JoystickOpen(controllerIndex), SDL_JoystickClose);
+    m_joystick.reset(SDL_JoystickOpen(controllerIndex), [this](SDL_Joystick* joystick)
+    {
+        if (SDL_JoystickFromInstanceID(m_instanceId))
+        {
+            SDL_JoystickClose(joystick);
+        }
+    });
     m_instanceId = SDL_JoystickInstanceID(m_joystick.get());
 }
 

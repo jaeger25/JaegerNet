@@ -32,8 +32,11 @@ Lobby::Lobby()
 
 Lobby::~Lobby()
 {
-    GetInputListener()->ControllerAdded(m_controllerAddedToken);
-    GetInputListener()->ControllerStateChanged(m_controllerStateChangedToken);
+    if (auto inputListener = GetInputListener(); inputListener != nullptr)
+    {
+        inputListener->ControllerAdded(m_controllerAddedToken);
+        inputListener->ControllerStateChanged(m_controllerStateChangedToken);
+    }
 }
 
 int32_t Lobby::PlayerConnected(PlayerConnectedCallback&& callback)

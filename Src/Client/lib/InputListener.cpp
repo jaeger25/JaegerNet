@@ -188,7 +188,11 @@ void InputListener::RunInputThread()
     do
     {
         SDL_Event joystickEvent = {};
-        FAIL_FAST_IF(!SDL_WaitEvent(&joystickEvent));
+        if (!SDL_WaitEvent(&joystickEvent))
+        {
+            // TODO: log
+            running = false;
+        }
 
         switch (joystickEvent.type)
         {
@@ -216,4 +220,9 @@ void InputListener::RunInputThread()
         }
 
     } while (running);
+
+    {
+        std::unique_lock<std::shared_mutex> lock(m_controllersLock);
+        m_controllers.clear();
+    }
 }

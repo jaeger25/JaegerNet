@@ -31,7 +31,10 @@ namespace JaegerNet
 }
 
 #define FAIL_FAST() \
+{ \
+    __debugbreak(); \
     std::terminate(); \
+} \
 
 
 #define JAEGERNET_CATCH_RETURN() \
