@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 #include "Client.h"
 #include "Event.h"
 #include "InputListener.h"
@@ -17,10 +18,15 @@ namespace JaegerNet
 
     private:
         void OnControllerStateChanged(const Controller& controller);
+        void OnControllerInputResponse(const ControllerInputResponse& response);
 
         int m_playerNumber;
+        uint64_t m_nextMessageNumber = 1;
         Client& m_client;
         InputListener& m_inputListener;
         EventRegistrationToken m_controllerStateChangedToken;
+
+        std::mutex m_controllerStateLock;
+        std::map<uint64_t, ControllerState> m_pendingControllerStates;
     };
 }

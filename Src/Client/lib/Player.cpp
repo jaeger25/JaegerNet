@@ -34,21 +34,45 @@ void Player::PlayerNumber(int playerNumber)
 
 void Player::OnControllerStateChanged(const Controller& controller)
 {
+    std::lock_guard<std::mutex> lock(m_controllerStateLock);
+
     auto controllerState = controller.CurrentState();
+    m_pendingControllerStates.emplace(m_nextMessageNumber++, std::move(controllerState));
 
     auto inputRequest = std::make_unique<ControllerInputRequest>();
-    auto controllerInput = inputRequest->add_controllerinput();
+    for (auto&& [messageNumber, pendingState] : m_pendingControllerStates)
+    {
+        auto controllerInput = inputRequest->add_controllerinput();
 
-    controllerInput->set_axisvalue(controllerState.AxisValue);
-    controllerInput->set_controllerbuttonstate(static_cast<int32_t>(controllerState.ButtonState));
-    controllerInput->set_controllerdpadbuttonstate(static_cast<int32_t>(controllerState.DPadButtonState));
+        controllerInput->set_messagenumber(messageNumber);
+        controllerInput->set_axisvalue(pendingState.AxisValue);
+        controllerInput->set_controllerbuttonstate(static_cast<int32_t>(pendingState.ButtonState));
+        controllerInput->set_controllerdpadbuttonstate(static_cast<int32_t>(pendingState.DPadButtonState));
+    }
 
     inputRequest->set_playernumber(m_playerNumber);
 
     JaegerNetRequest request;
     request.set_allocated_controllerinputrequest(inputRequest.release());
 
-    m_client.Send(request, [](const JaegerNetResponse& /*response*/)
+    m_client.Send(request, [this](const JaegerNetResponse& response)
     {
+        OnControllerInputResponse(response.controllerinputresponse());
     });
+}
+
+void Player::OnControllerInputResponse(const ControllerInputResponse& response)
+{
+    std::lock_guard<std::mutex> lock(m_controllerStateLock);
+
+    auto highestMessageIter = m_pendingControllerStates.find(response.highestmessagenumber());
+    if (highestMessageIter != m_pendingControllerStates.end())
+    {
+        // TODO: log
+        m_pendingControllerStates.erase(m_pendingControllerStates.begin(), highestMessageIter);
+    }
+    else
+    {
+        //TODO: log
+    }
 }
