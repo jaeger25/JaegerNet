@@ -3,6 +3,7 @@
 #include <functional>
 #include <map>
 #include <mutex>
+#include "JaegerNet_Types.h"
 
 namespace JaegerNet
 {
@@ -10,11 +11,11 @@ namespace JaegerNet
     class EventSource
     {
     public:
-        int32_t Add(std::function<void(Args...)>&& callback)
+        EventRegistrationToken Add(std::function<void(Args...)>&& callback)
         {
             std::lock_guard<std::mutex> lock(m_callbacksLock);
 
-            static int32_t NextToken = 0;
+            static EventRegistrationToken NextToken = 0;
 
             auto token = NextToken++;
             m_callbacks.emplace(token, std::move(callback));
@@ -22,7 +23,7 @@ namespace JaegerNet
             return token;
         }
 
-        void Remove(int32_t token)
+        void Remove(EventRegistrationToken token)
         {
             std::lock_guard<std::mutex> lock(m_callbacksLock);
 
@@ -41,6 +42,6 @@ namespace JaegerNet
 
     private:
         std::mutex m_callbacksLock;
-        std::map<int32_t, std::function<void(Args...)>> m_callbacks;
+        std::map<EventRegistrationToken, std::function<void(Args...)>> m_callbacks;
     };
 }

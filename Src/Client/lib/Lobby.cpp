@@ -3,6 +3,7 @@
 #include "Controller.h"
 #include "ErrorCodes.h"
 #include "InputListener.h"
+#include "ControllerInputMessage.pb.h"
 
 using namespace JaegerNet;
 
@@ -44,7 +45,7 @@ void Lobby::OnControllerStateChanged(const Controller& controller)
 {
     std::shared_lock<std::shared_mutex> lock(m_playersLock);
 
-    auto playerId = m_controllerIndexToPlayerNumberMap[controller.Index()];
+    auto playerNumber = m_controllerIndexToPlayerNumberMap[controller.Index()];
     auto controllerState = controller.CurrentState();
 
     auto controllerInput = std::make_unique<ControllerInput>();
@@ -52,9 +53,9 @@ void Lobby::OnControllerStateChanged(const Controller& controller)
     controllerInput->set_axisvalue(controllerState.AxisValue);
     controllerInput->set_controllerbuttonstate(static_cast<int32_t>(controllerState.ButtonState));
     controllerInput->set_controllerdpadbuttonstate(static_cast<int32_t>(controllerState.DPadButtonState));
-    controllerInput->set_playerid(playerId);
 
     auto inputRequest = std::make_unique<ControllerInputRequest>();
+    inputRequest->set_playernumber(playerNumber);
     inputRequest->set_allocated_controllerinput(controllerInput.release());
 
     JaegerNetRequest request;

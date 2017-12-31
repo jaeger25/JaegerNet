@@ -3,15 +3,15 @@ package JaegerNet;
 
 message ControllerInput
 {
-    int32 PlayerId = 1;
-    int32 AxisValue = 2;
-    int32 ControllerButtonState = 3;
-    int32 ControllerDPadButtonState = 4;
+    int32 AxisValue = 1;
+    int32 ControllerButtonState = 2;
+    int32 ControllerDPadButtonState = 3;
 }
 
 message ControllerInputRequest
 {
-    ControllerInput ControllerInput = 1;
+    int32 PlayerNumber = 1;
+    ControllerInput ControllerInput = 2;
 }
 
 message ControllerInputResponse

@@ -20,7 +20,7 @@ namespace JaegerNet
         void HandleConnectRequest(RequestReceivedEventArgs& args);
         void OnRequestReceived(RequestReceivedEventArgs& args);
 
-        int32_t m_requestReceivedToken;
+        EventRegistrationToken m_requestReceivedToken;
 
         Server& m_server;
 
