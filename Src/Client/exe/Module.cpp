@@ -10,8 +10,6 @@ int main(int argc, char** argv)
 {
     std::string hostname;
     std::string port;
-    bool createLobby = false;
-    int32_t lobbyId = 0;
     int controllerIndex = 0;
 
     try
@@ -26,25 +24,11 @@ int main(int argc, char** argv)
         TCLAP::ValueArg<int> controllerIndexArg("", "controllerindex", "Index (starting at 0) of the controller to use for input", false, 0, "int");
         cmdLine.add(controllerIndexArg);
 
-        TCLAP::ValueArg<int32_t> lobbyIdArg("", "lobbyid", "LobbyId to try and connect to", true, 0, "int");
-        TCLAP::SwitchArg createLobbySwitch("", "createlobby", "Switch which indicates a new lobby should be created", false);
-        cmdLine.xorAdd(lobbyIdArg, createLobbySwitch);
-
         cmdLine.parse(argc, argv);
 
         hostname = hostnameArg.getValue();
         port = portArg.getValue();
         controllerIndex = controllerIndexArg.getValue();
-
-        if (lobbyIdArg.isSet())
-        {
-            lobbyId = lobbyIdArg.getValue();
-        }
-        else if (createLobbySwitch.isSet())
-        {
-            createLobby = true;
-        }
-
     }
     catch (TCLAP::ArgException& ex)
     {
@@ -74,29 +58,10 @@ int main(int argc, char** argv)
         cout << "Connect_PlayerDisconnected: " << playerNumber << endl;
     });
 
-    auto connectErrorCallback = [](JaegerNetError error)
+    JaegerNet_Connect(controllerIndex, [](JaegerNetError error)
     {
         cout << "Connect_ErrorCallback: Error: " << static_cast<int32_t>(error) << endl;
-    };
-
-    if (createLobby)
-    {
-        JaegerNet_CreateLobby(
-            [](JaegerNetError error)
-        {
-            cout << "CreateLobby_ErrorCallback: Error: " << static_cast<int32_t>(error) << endl;
-        },
-            [connectErrorCallback, controllerIndex](int32_t lobbyId)
-        {
-            cout << "CreateLobby_Callback: LobbyId: " << lobbyId << endl;
-
-            JaegerNet_Connect(lobbyId, controllerIndex, connectErrorCallback);
-        });
-    }
-    else
-    {
-        JaegerNet_Connect(lobbyId, controllerIndex, connectErrorCallback);
-    }
+    });
 
     getchar();
 

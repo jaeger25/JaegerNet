@@ -6,8 +6,8 @@
 
 using namespace JaegerNet;
 
-Player::Player(int32_t playerId) :
-    m_playerId(playerId)
+Player::Player(int playerNumber) :
+    m_playerNumber(playerNumber)
 {
 }
 
@@ -19,22 +19,12 @@ Player::~Player()
 {
 }
 
-int32_t Player::PlayerId() const
-{
-    return m_playerId;
-}
-
-void Player::PlayerId(int32_t playerId)
-{
-    m_playerId = playerId;
-}
-
-int32_t Player::PlayerNumber() const
+int Player::PlayerNumber() const
 {
     return m_playerNumber;
 }
 
-void Player::PlayerNumber(int32_t playerNumber)
+void Player::PlayerNumber(int playerNumber)
 {
     m_playerNumber = playerNumber;
 }

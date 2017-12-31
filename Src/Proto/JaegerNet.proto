@@ -1,7 +1,6 @@
 syntax = "proto3";
 package JaegerNet;
 
-import "CreateLobbyMessage.proto";
 import "ConnectMessage.proto";
 import "ControllerInputMessage.proto";
 
@@ -20,10 +19,9 @@ message JaegerNetRequest
 
     oneof RequestType
     {
-        CreateLobbyRequest CreateLobbyRequest = 3;
-        ConnectRequest ConnectRequest = 4;
-        DisconnectRequest DisconnectRequest = 5;
-        ControllerInputRequest ControllerInputRequest = 6;
+        ConnectRequest ConnectRequest = 3;
+        DisconnectRequest DisconnectRequest = 4;
+        ControllerInputRequest ControllerInputRequest = 5;
     }
 }
 
@@ -35,10 +33,9 @@ message JaegerNetResponse
 
     oneof ResponseType
     {
-        CreateLobbyResponse CreateLobbyResponse = 4;
-        ConnectResponse ConnectResponse = 5;
-        DisconnectResponse DisconnectResponse = 6;
-        ControllerInputResponse ControllerInputResponse = 7;
+        ConnectResponse ConnectResponse = 4;
+        DisconnectResponse DisconnectResponse = 5;
+        ControllerInputResponse ControllerInputResponse = 6;
     }
 }
 

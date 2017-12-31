@@ -7,16 +7,13 @@ namespace JaegerNet
     class Player
     {
     public:
-        Player(int32_t playerId, int playerNumber, asio::ip::udp::endpoint&& endpoint);
+        Player(int playerNumber, asio::ip::udp::endpoint&& endpoint);
         virtual ~Player();
 
-        int32_t PlayerId() const;
         int PlayerNumber() const;
-
-        void Send(IServer* const server, JaegerNetBroadcast& message);
+        asio::ip::udp::endpoint& Endpoint();
 
     private:
-        int32_t m_playerId;
         int m_playerNumber;
         asio::ip::udp::endpoint m_endpoint;
     };

@@ -45,23 +45,6 @@ void Server::Run(bool runAsync)
     }
 }
 
-void Server::Send(const JaegerNetResponse& message)
-{
-    FAIL_FAST_IF(message.messageid() == 0);
-
-    if (!message.SerializeToArray(&m_sentData, message.ByteSize()))
-    {
-        // TODO: log
-        return;
-    }
-
-    m_socket.async_send_to(
-        asio::buffer(m_sentData, message.ByteSize()), m_endpoint,
-        std::bind(&Server::OnDataSent, this,
-            std::placeholders::_1,
-            std::placeholders::_2));
-}
-
 void Server::Send(asio::ip::udp::endpoint& endpoint, JaegerNetBroadcast& message)
 {
     static std::atomic_uint64_t NextMessageId = 1;
@@ -81,6 +64,21 @@ void Server::Send(asio::ip::udp::endpoint& endpoint, JaegerNetBroadcast& message
             std::placeholders::_2));
 }
 
+void Server::Send(const JaegerNetResponse& response)
+{
+    if (!response.SerializeToArray(&m_sentData, response.ByteSize()))
+    {
+        // TODO: log
+        return;
+    }
+
+    m_socket.async_send_to(
+        asio::buffer(m_sentData, response.ByteSize()), m_endpoint,
+        std::bind(&Server::OnDataSent, this,
+            std::placeholders::_1,
+            std::placeholders::_2));
+}
+
 void Server::StartReceive()
 {
     m_socket.async_receive_from(
@@ -94,14 +92,17 @@ void Server::OnDataReceived(const std::error_code& error, std::size_t bytesRecei
 {
     if (!error || bytesReceived > 0)
     {
-        JaegerNetRequest message;
-        if (!message.ParseFromArray(m_receievedData.data(), static_cast<int>(bytesReceived)))
+        JaegerNetRequest request;
+        if (!request.ParseFromArray(m_receievedData.data(), static_cast<int>(bytesReceived)))
         {
             // TODO: log / handle
             return;
         }
 
-        auto args = RequestReceivedEventArgs{ std::move(m_endpoint), message };
+        JaegerNetResponse response;
+        response.set_messageid(request.messageid());
+
+        auto args = RequestReceivedEventArgs{ std::move(m_endpoint), request, response };
         m_requestReceivedEventSource.Invoke(args);
 
         StartReceive();

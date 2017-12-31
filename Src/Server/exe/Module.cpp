@@ -1,15 +1,15 @@
 #include "Module.h"
-#include "Server.h"
-#include "LobbyManager.h"
+#include "Session.h"
 
 using namespace JaegerNet;
 using namespace std;
 
 int main(int /*argc*/, char** /*argv*/)
 {
-    Server server(31337);
+    SessionDetails details{ 31337 };
+    Session session(details);
 
-    service.run();
+    session.Server().Run(false);
 
     return 0;
 }

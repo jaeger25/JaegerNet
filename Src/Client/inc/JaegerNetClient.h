@@ -5,9 +5,8 @@
 #include "ErrorCodes.h"
 
 typedef std::function<void(JaegerNet::JaegerNetError error)> JaegerNet_ErrorCallback;
-typedef std::function<void(int32_t lobbyId)> JaegerNet_LobbyCreatedCallback;
-typedef std::function<void(int32_t playerNumber)> JaegerNet_PlayerConnectedCallback;
-typedef std::function<void(int32_t playerNumber)> JaegerNet_PlayerDisconnectedCallback;
+typedef std::function<void(int playerNumber)> JaegerNet_PlayerConnectedCallback;
+typedef std::function<void(int playerNumber)> JaegerNet_PlayerDisconnectedCallback;
 typedef std::function<void(int controllerIndex)> JaegerNet_ControllerAddedCallback;
 typedef std::function<void(int controllerIndex)> JaegerNet_ControllerRemovedCallback;
 
@@ -26,5 +25,4 @@ EventRegistrationToken JAEGERNET_EXPORT JaegerNet_RegisterPlayerDisconnectedCall
 void JAEGERNET_EXPORT JaegerNet_UnregisterPlayerConnectedCallback(EventRegistrationToken token);
 void JAEGERNET_EXPORT JaegerNet_UnregisterPlayerDisconnectedCallback(EventRegistrationToken token);
 
-void JAEGERNET_EXPORT JaegerNet_CreateLobby(JaegerNet_ErrorCallback errorCallback, JaegerNet_LobbyCreatedCallback lobbyCreatedCallback);
-void JAEGERNET_EXPORT JaegerNet_Connect(int32_t lobbyId, int controllerIndex, JaegerNet_ErrorCallback errorCallback);
+void JAEGERNET_EXPORT JaegerNet_Connect(int controllerIndex, JaegerNet_ErrorCallback errorCallback);

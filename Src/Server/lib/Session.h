@@ -1,6 +1,7 @@
 #pragma once
-#include "LobbyManager.h"
+#include "Lobby.h"
 #include "Server.h"
+#include "JaegerNet.pb.h"
 
 namespace JaegerNet
 {
@@ -16,14 +17,10 @@ namespace JaegerNet
         ~Session();
 
         Server& Server();
-        LobbyManager& LobbyManager();
+        Lobby& Lobby();
 
     private:
-        //void OnRequestReceived(const BroadcastReceivedEventArgs& args);
-
-        int32_t m_broadcastReceivedToken;
-
         JaegerNet::Server m_server;
-        JaegerNet::LobbyManager m_lobbyManager;
+        JaegerNet::Lobby m_lobby;
     };
 }

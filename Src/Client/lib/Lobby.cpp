@@ -17,7 +17,7 @@ Lobby::~Lobby()
 
 void Lobby::BindPlayerToController(int32_t playerId, int controllerIndex)
 {
-    m_controllerIndexToPlayerIdMap[controllerIndex] = playerId;
+    m_controllerIndexToPlayerNumberMap[controllerIndex] = playerId;
 }
 
 int32_t Lobby::PlayerConnected(PlayerConnectedCallback&& callback)
@@ -44,7 +44,7 @@ void Lobby::OnControllerStateChanged(const Controller& controller)
 {
     std::shared_lock<std::shared_mutex> lock(m_playersLock);
 
-    auto playerId = m_controllerIndexToPlayerIdMap[controller.Index()];
+    auto playerId = m_controllerIndexToPlayerNumberMap[controller.Index()];
     auto controllerState = controller.CurrentState();
 
     auto controllerInput = std::make_unique<ControllerInput>();
@@ -77,23 +77,13 @@ void Lobby::OnBroadcastReceived(const BroadcastReceivedEventArgs& args)
 
             for (auto&& playerInfo : connectBroadcast.playerinfo())
             {
-                auto playerIter = m_players.find(playerInfo.playerid());
+                auto playerIter = m_players.find(playerInfo.playernumber());
                 if (playerIter == m_players.end())
                 {
-                    Player player;
-                    player.PlayerId(playerInfo.playerid());
-                    player.PlayerNumber(playerInfo.playernumber());
+                    Player player(playerInfo.playernumber());
 
-                    m_players.emplace(playerInfo.playerid(), std::move(player));
+                    m_players.emplace(playerInfo.playernumber(), std::move(player));
                     newPlayers.push_back(player.PlayerNumber());
-                }
-                else
-                {
-                    if (playerIter->second.PlayerNumber() != playerInfo.playernumber())
-                    {
-                        playerIter->second.PlayerNumber(playerInfo.playernumber());
-                        newPlayers.push_back(playerInfo.playernumber());
-                    }
                 }
             }
         }

@@ -14,9 +14,10 @@ namespace JaegerNet
     {
         asio::ip::udp::endpoint Endpoint;
         const JaegerNetRequest& Request;
+        JaegerNetResponse& Response;
     };
 
-    typedef std::function<void(const RequestReceivedEventArgs& args)> RequestReceivedCallback;
+    typedef std::function<void(RequestReceivedEventArgs& args)> RequestReceivedCallback;
 
     class Server
     {
@@ -24,7 +25,6 @@ namespace JaegerNet
         Server(short port);
         virtual ~Server();
 
-        void Send(const JaegerNetResponse& message);
         void Send(asio::ip::udp::endpoint& endpoint, JaegerNetBroadcast& message);
         void Run(bool runAsync);
 
@@ -32,11 +32,12 @@ namespace JaegerNet
         void RequestReceived(int32_t token);
 
     private:
+        void OnDataReceived(const std::error_code& error, std::size_t bytesReceived);
+        void OnDataSent(const std::error_code& error, std::size_t bytesReceived);
+        void Send(const JaegerNetResponse& response);
         void StartReceive();
-        void OnDataReceived(const std::error_code& error, std::size_t /*bytesReceived*/);
-        void OnDataSent(const std::error_code& error, std::size_t /*bytesReceived*/);
 
-        EventSource<const RequestReceivedEventArgs&> m_requestReceivedEventSource;
+        EventSource<RequestReceivedEventArgs&> m_requestReceivedEventSource;
 
         asio::io_service m_service;
         asio::ip::udp::socket m_socket;
