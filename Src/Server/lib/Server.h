@@ -23,7 +23,10 @@ namespace JaegerNet
     {
     public:
         Server(short port);
-        virtual ~Server();
+        Server(const Server& other) = delete;
+        Server& operator=(const Server&) = delete;
+
+        ~Server();
 
         void Send(asio::ip::udp::endpoint& endpoint, JaegerNetBroadcast& message);
         void Run(bool runAsync);

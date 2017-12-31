@@ -1,6 +1,7 @@
 #pragma once
 
 #include <shared_mutex>
+#include <vector>
 #include "ErrorCodes.h"
 #include "Player.h"
 #include "Server.h"
@@ -14,7 +15,10 @@ namespace JaegerNet
     {
     public:
         Lobby(Server& server);
-        virtual ~Lobby();
+        Lobby(const Lobby& other) = delete;
+        Lobby& operator=(const Lobby&) = delete;
+
+        ~Lobby();
 
     private:
         void HandleConnectRequest(RequestReceivedEventArgs& args);

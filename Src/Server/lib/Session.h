@@ -14,6 +14,9 @@ namespace JaegerNet
     {
     public:
         Session(const SessionDetails& details);
+        Session(const Session& other) = delete;
+        Session& operator=(const Session&) = delete;
+
         ~Session();
 
         Server& Server();

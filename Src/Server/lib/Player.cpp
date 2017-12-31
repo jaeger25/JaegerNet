@@ -5,7 +5,7 @@ using namespace asio::ip;
 using namespace JaegerNet;
 using namespace std;
 
-Player::Player(int playerNumber, Server& server, udp::endpoint&& endpoint) :
+Player::Player(int playerNumber, Server& server, udp::endpoint&& endpoint) noexcept :
     m_playerNumber(playerNumber),
     m_server(server),
     m_endpoint(std::move(endpoint))
@@ -14,6 +14,17 @@ Player::Player(int playerNumber, Server& server, udp::endpoint&& endpoint) :
     {
         OnRequestReceived(args);
     });
+}
+
+Player::Player(Player&& other) noexcept :
+    m_playerNumber(other.m_playerNumber),
+    m_server(other.m_server),
+    m_endpoint(std::move(other.m_endpoint)),
+    m_controllerStateChangedEventSource(std::move(other.m_controllerStateChangedEventSource)),
+    m_controllerStates(std::move(other.m_controllerStates)),
+    m_nextMessageNumber(other.m_nextMessageNumber),
+    m_requestReceivedToken(other.m_requestReceivedToken)
+{
 }
 
 Player::~Player()
@@ -31,22 +42,47 @@ udp::endpoint& Player::Endpoint()
     return m_endpoint;
 }
 
-void Player::PushControllerState(const ControllerState& state)
+EventRegistrationToken Player::ControllerStateChanged(ControllerStateChangedCallback&& callback)
 {
-    m_controllerStates.push(state);
+    return m_controllerStateChangedEventSource.Add(std::move(callback));
 }
 
-ControllerState Player::PopControllerState()
+void Player::ControllerStateChanged(EventRegistrationToken token)
 {
-    auto state = m_controllerStates.front();
-    m_controllerStates.pop();
-
-    return state;
+    m_controllerStateChangedEventSource.Remove(token);
 }
 
-void Player::HandleInputRequest(RequestReceivedEventArgs& /*args*/)
+void Player::HandleInputRequest(RequestReceivedEventArgs& args)
 {
+    auto inputRequest = args.Request.controllerinputrequest();
 
+    ControllerState controllerState;
+    for (auto&& state : inputRequest.controllerinput())
+    {
+        if (!m_controllerStates.count(state.messagenumber()))
+        {
+            controllerState.AxisValue = static_cast<int16_t>(state.axisvalue());
+            controllerState.ButtonState = static_cast<ControllerButton>(state.controllerbuttonstate());
+            controllerState.DPadButtonState = static_cast<ControllerDPadButton>(state.controllerdpadbuttonstate());
+
+            m_controllerStates.emplace(state.messagenumber(), std::move(controllerState));
+        }
+    }
+
+    for (auto iter = m_controllerStates.begin(); iter != m_controllerStates.end();)
+    {
+        if (iter->first == m_nextMessageNumber)
+        {
+            ControllerStateChangedEventArgs stateChangedArgs{ m_playerNumber, iter->second };
+            m_controllerStateChangedEventSource.Invoke(stateChangedArgs);
+            iter = m_controllerStates.erase(iter);
+            m_nextMessageNumber++;
+        }
+        else
+        {
+            break;
+        }
+    }
 }
 
 void Player::OnRequestReceived(RequestReceivedEventArgs& args)

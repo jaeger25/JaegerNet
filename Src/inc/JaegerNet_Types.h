@@ -4,7 +4,7 @@ namespace JaegerNet
 {
     typedef int32_t EventRegistrationToken;
 
-    enum class ControllerDPadButton : uint8_t
+    enum class ControllerDPadButton : uint32_t
     {
         Centered = 0x00,
         Up = 0x01,
@@ -13,7 +13,7 @@ namespace JaegerNet
         Left = 0x08,
     };
 
-    enum class ControllerButton : uint16_t
+    enum class ControllerButton : uint32_t
     {
         C_Up = 0x001,
         C_Right = 0x002,
