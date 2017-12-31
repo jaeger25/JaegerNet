@@ -5,38 +5,44 @@
 #include <memory>
 #include <asio.hpp>
 #include "Constants.h"
+#include "Event.h"
 #include "JaegerNet.pb.h"
 
 namespace JaegerNet
 {
-    class IMessageHandler;
-
-    class IServer
+    struct RequestReceivedEventArgs
     {
-    public:
-        virtual void Send(const JaegerNetResponse& message) = 0;
-        virtual void Send(asio::ip::udp::endpoint& endpoint, JaegerNetBroadcast& message) = 0;
+        asio::ip::udp::endpoint Endpoint;
+        const JaegerNetRequest& Request;
     };
 
-    class Server : public IServer
+    typedef std::function<void(const RequestReceivedEventArgs& args)> RequestReceivedCallback;
+
+    class Server
     {
     public:
-        Server(asio::io_service& service, short port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers);
+        Server(short port);
         virtual ~Server();
 
-        // IServer
-        virtual void Send(const JaegerNetResponse& message);
-        virtual void Send(asio::ip::udp::endpoint& endpoint, JaegerNetBroadcast& message);
+        void Send(const JaegerNetResponse& message);
+        void Send(asio::ip::udp::endpoint& endpoint, JaegerNetBroadcast& message);
+        void Run(bool runAsync);
+
+        int32_t RequestReceived(RequestReceivedCallback&& callback);
+        void RequestReceived(int32_t token);
 
     private:
         void StartReceive();
         void OnDataReceived(const std::error_code& error, std::size_t /*bytesReceived*/);
         void OnDataSent(const std::error_code& error, std::size_t /*bytesReceived*/);
 
+        EventSource<const RequestReceivedEventArgs&> m_requestReceivedEventSource;
+
+        asio::io_service m_service;
         asio::ip::udp::socket m_socket;
         asio::ip::udp::endpoint m_endpoint;
         std::array<std::byte, MaxPacketSize> m_receievedData;
         std::array<std::byte, MaxPacketSize> m_sentData;
-        std::vector<std::unique_ptr<IMessageHandler>> m_messageHandlers;
+        std::thread m_serviceThread;
     };
 }

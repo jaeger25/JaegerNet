@@ -1,6 +1,5 @@
 #include "Server.h"
 #include "ErrorCodes.h"
-#include "MessageHandler.h"
 #include <atomic>
 
 using namespace asio;
@@ -9,15 +8,41 @@ using namespace std;
 
 using asio::ip::udp;
 
-Server::Server(asio::io_service& service, short port, std::vector<std::unique_ptr<IMessageHandler>>&& messageHandlers) :
-    m_socket(service, udp::endpoint(udp::v4(), port)),
-    m_messageHandlers(std::move(messageHandlers))
+Server::Server(short port) :
+    m_socket(m_service, udp::endpoint(udp::v4(), port))
 {
     StartReceive();
 }
 
 Server::~Server()
 {
+    m_service.stop();
+    m_serviceThread.join();
+}
+
+int32_t Server::RequestReceived(RequestReceivedCallback&& callback)
+{
+    return m_requestReceivedEventSource.Add(std::move(callback));
+}
+
+void Server::RequestReceived(int32_t token)
+{
+    m_requestReceivedEventSource.Remove(token);
+}
+
+void Server::Run(bool runAsync)
+{
+    if (runAsync)
+    {
+        m_serviceThread = std::thread([this]
+        {
+            m_service.run();
+        });
+    }
+    else
+    {
+        m_service.run();
+    }
 }
 
 void Server::Send(const JaegerNetResponse& message)
@@ -76,11 +101,8 @@ void Server::OnDataReceived(const std::error_code& error, std::size_t bytesRecei
             return;
         }
 
-        auto args = MessageReceivedEventArgs{ std::move(m_endpoint), message };
-        for (auto&& handler : m_messageHandlers)
-        {
-            handler->OnMessageReceived(this, args);
-        }
+        auto args = RequestReceivedEventArgs{ std::move(m_endpoint), message };
+        m_requestReceivedEventSource.Invoke(args);
 
         StartReceive();
     }
