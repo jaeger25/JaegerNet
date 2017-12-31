@@ -3,12 +3,13 @@
 #include <functional>
 #include <map>
 #include <shared_mutex>
+#include "NoCopy.h"
 #include "JaegerNet_Types.h"
 
 namespace JaegerNet
 {
     template<typename... Args>
-    class EventSource
+    class EventSource : NoCopy
     {
     public:
         EventSource() noexcept {}
@@ -17,9 +18,6 @@ namespace JaegerNet
             m_callbacks(std::move(other.m_callbacks))
         {
         }
-
-        EventSource(const EventSource& other) = delete;
-        EventSource& operator=(const EventSource&) = delete;
 
         EventRegistrationToken Add(std::function<void(Args...)>&& callback)
         {
