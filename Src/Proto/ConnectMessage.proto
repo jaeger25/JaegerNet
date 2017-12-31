@@ -3,20 +3,18 @@ package JaegerNet;
 
 message ConnectRequest
 {
-    int32 LobbyId = 1;
 }
 
 message ConnectResponse
 {
-    int32 PlayerId = 1;
+    int32 PlayerNumber = 1;
 }
 
 message ConnectBroadcast
 {
     message Player
     {
-        int32 PlayerId = 1;
-        int32 PlayerNumber = 2;
+        int32 PlayerNumber = 1;
     }
 
     repeated Player PlayerInfo = 1;
@@ -24,7 +22,7 @@ message ConnectBroadcast
 
 message DisconnectRequest
 {
-    int32 PlayerId = 1;
+    int32 PlayerNumber = 1;
 }
 
 message DisconnectResponse

@@ -6,23 +6,29 @@
 using namespace JaegerNet;
 using namespace std;
 
-Lobby::Lobby(int id) :
-    m_id(id)
+Lobby::Lobby(Server& server) :
+    m_server(server)
 {
-
+    m_requestReceivedToken = m_server.RequestReceived([this](RequestReceivedEventArgs& args)
+    {
+        OnRequestReceived(args);
+    });
 }
 
 Lobby::~Lobby()
 {
-
+    m_server.RequestReceived(m_requestReceivedToken);
 }
 
-int Lobby::Id() const
+void Lobby::OnRequestReceived(RequestReceivedEventArgs& args)
 {
-    return m_id;
+    if (args.Request.has_connectrequest())
+    {
+        HandleConnectRequest(args);
+    }
 }
 
-Player Lobby::OnConnectRequest(IServer* const server, asio::ip::udp::endpoint&& endpoint)
+void Lobby::HandleConnectRequest(RequestReceivedEventArgs& args)
 {
     std::unique_lock<std::shared_mutex> lock(m_playersLock);
 
@@ -31,17 +37,13 @@ Player Lobby::OnConnectRequest(IServer* const server, asio::ip::udp::endpoint&& 
         throw JaegerNetException(JaegerNetError::LobbyCapacityExceeded);
     }
 
-    static int32_t NextPlayerId = 1;
-
-    Player newPlayer(NextPlayerId++, m_players.size() + 1, std::move(endpoint));
-    m_players.emplace_back(std::move(newPlayer));
+    m_players.emplace_back(m_players.size() + 1, std::move(args.Endpoint));
 
     auto connectBroadcast = std::make_unique<ConnectBroadcast>();
     for (auto&& player : m_players)
     {
         auto playerInfo = connectBroadcast->add_playerinfo();
 
-        playerInfo->set_playerid(player.PlayerId());
         playerInfo->set_playernumber(player.PlayerNumber());
     }
 
@@ -49,18 +51,10 @@ Player Lobby::OnConnectRequest(IServer* const server, asio::ip::udp::endpoint&& 
     broadcast.set_allocated_connectbroadcast(connectBroadcast.release());
     for (auto&& player : m_players)
     {
-        player.Send(server, broadcast);
+        m_server.Send(player.Endpoint(), broadcast);
     }
 
-    return newPlayer;
-}
-
-void Lobby::OnControllerInputRequest(IServer* const /*server*/, const ControllerInputRequest& /*inputRequest*/)
-{
-    std::shared_lock<std::shared_mutex> lock(m_playersLock);
-
-    JaegerNetBroadcast broadcast;
-    auto inputResponse = std::make_unique<ControllerInputResponse>();
-
-    JaegerNetResponse response;
+    auto connectResponse = std::make_unique<ConnectResponse>();
+    connectResponse->set_playernumber(m_players.back().PlayerNumber());
+    args.Response.set_allocated_connectresponse(connectResponse.release());
 }

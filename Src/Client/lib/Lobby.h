@@ -3,8 +3,9 @@
 #include <map>
 #include <queue>
 #include <shared_mutex>
-#include "Player.h"
+#include "Client.h"
 #include "Event.h"
+#include "Player.h"
 
 namespace JaegerNet
 {
@@ -17,8 +18,10 @@ namespace JaegerNet
     class Lobby
     {
     public:
-        Lobby();
+        Lobby(Client& client);
         ~Lobby();
+
+        void BindPlayerToController(int32_t playerId, int controllerIndex);
 
         int32_t PlayerConnected(PlayerConnectedCallback&& callback);
         void PlayerConnected(int32_t token);
@@ -33,7 +36,10 @@ namespace JaegerNet
         EventSource<int32_t> m_playerConnectedEventSource;
         EventSource<int32_t> m_playerDisconnectedEventSource;
 
+        Client& m_client;
+
         std::shared_mutex m_playersLock;
-        std::map<int32_t, Player> m_players;
+        std::map<int, Player> m_players;
+        std::map<int, int> m_controllerIndexToPlayerNumberMap;
     };
 }

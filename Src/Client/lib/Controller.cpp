@@ -4,9 +4,9 @@ using namespace JaegerNet;
 
 Controller::Controller(int controllerIndex)
 {
-    m_joystick.reset(SDL_JoystickOpen(controllerIndex), [instanceId = m_instanceId](SDL_Joystick* joystick)
+    m_joystick.reset(SDL_JoystickOpen(controllerIndex), [this](SDL_Joystick* joystick)
     {
-        if (SDL_JoystickFromInstanceID(instanceId))
+        if (SDL_JoystickFromInstanceID(m_instanceId))
         {
             SDL_JoystickClose(joystick);
         }
@@ -28,19 +28,14 @@ int32_t Controller::Index() const
     return m_index;
 }
 
-int16_t Controller::AxisValue() const
+const ControllerState Controller::CurrentState() const
 {
-    return m_axisValue;
-}
+    ControllerState state;
+    state.AxisValue = m_axisValue;
+    state.ButtonState = static_cast<ControllerButton>(m_buttonStates);
+    state.DPadButtonState = static_cast<ControllerDPadButton>(m_dpadButtonStates);
 
-ControllerButton Controller::ControllerButtonState() const
-{
-    return static_cast<ControllerButton>(m_buttonStates);
-}
-
-ControllerDPadButton Controller::ControllerDPadButtonState() const
-{
-    return static_cast<ControllerDPadButton>(m_dpadButtonStates);
+    return state;
 }
 
 void Controller::OnDPadButtonStateChanged(ControllerDPadButton buttonStates)

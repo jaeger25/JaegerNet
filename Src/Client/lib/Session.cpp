@@ -3,7 +3,8 @@
 using namespace JaegerNet;
 
 Session::Session(const SessionDetails& details) :
-    m_client(details.Hostname, details.Port)
+    m_client(details.Hostname, details.Port),
+    m_lobby(m_client)
 {
     m_broadcastReceivedToken = m_client.BroadcastReceived([this](const BroadcastReceivedEventArgs& args)
     {
