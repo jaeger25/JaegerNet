@@ -14,9 +14,10 @@ namespace JaegerNet
     public:
         EventSource() noexcept {}
 
-        EventSource(EventSource&& other) noexcept :
-            m_callbacks(std::move(other.m_callbacks))
+        EventSource(EventSource&& other) noexcept
         {
+            std::unique_lock<std::shared_mutex> lock(other.m_callbacksLock);
+            m_callbacks = std::move(other.m_callbacks);
         }
 
         EventRegistrationToken Add(std::function<void(Args...)>&& callback)

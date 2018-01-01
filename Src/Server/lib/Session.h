@@ -1,5 +1,6 @@
 #pragma once
 #include "Lobby.h"
+#include "NoCopy.h"
 #include "Server.h"
 #include "JaegerNet.pb.h"
 
@@ -10,13 +11,10 @@ namespace JaegerNet
         short Port;
     };
 
-    class Session
+    class Session : NoCopy
     {
     public:
         Session(const SessionDetails& details);
-        Session(const Session& other) = delete;
-        Session& operator=(const Session&) = delete;
-
         ~Session();
 
         Server& Server();

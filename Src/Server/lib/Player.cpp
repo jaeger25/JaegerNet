@@ -83,6 +83,12 @@ void Player::HandleInputRequest(RequestReceivedEventArgs& args)
             break;
         }
     }
+
+    auto inputResponse = std::make_unique<ControllerInputResponse>();
+    inputResponse->set_playernumber(inputRequest.playernumber());
+    inputResponse->set_highestmessagenumber(m_nextMessageNumber - 1);
+
+    args.Response.set_allocated_controllerinputresponse(inputResponse.release());
 }
 
 void Player::OnRequestReceived(RequestReceivedEventArgs& args)
