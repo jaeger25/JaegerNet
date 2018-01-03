@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 {
     std::string hostname;
     std::string port;
-    int controllerIndex = 0;
+    std::vector<int> controllerIndices;
 
     try
     {
@@ -21,14 +21,14 @@ int main(int argc, char** argv)
         cmdLine.add(hostnameArg);
         cmdLine.add(portArg);
 
-        TCLAP::ValueArg<int> controllerIndexArg("", "controllerindex", "Index (starting at 0) of the controller to use for input", false, 0, "int");
+        TCLAP::MultiArg<int> controllerIndexArg("", "controllerindex", "Index (starting at 0) of the controller to use for input", false, "int");
         cmdLine.add(controllerIndexArg);
 
         cmdLine.parse(argc, argv);
 
         hostname = hostnameArg.getValue();
         port = portArg.getValue();
-        controllerIndex = controllerIndexArg.getValue();
+        controllerIndices = controllerIndexArg.getValue();
     }
     catch (TCLAP::ArgException& ex)
     {
@@ -58,10 +58,13 @@ int main(int argc, char** argv)
         cout << "Connect_PlayerDisconnected: " << playerNumber << endl;
     });
 
-    JaegerNet_Connect(controllerIndex, [](JaegerNetError error)
+    for (auto&& controllerIndex : controllerIndices)
     {
-        cout << "Connect_ErrorCallback: Error: " << static_cast<int32_t>(error) << endl;
-    });
+        JaegerNet_Connect(controllerIndex, [](JaegerNetError error)
+        {
+            cout << "Connect_ErrorCallback: Error: " << static_cast<int32_t>(error) << endl;
+        });
+    }
 
     getchar();
 

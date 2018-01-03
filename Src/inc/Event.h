@@ -22,7 +22,7 @@ namespace JaegerNet
 
         EventRegistrationToken Add(std::function<void(Args...)>&& callback)
         {
-            std::unique_lock<std::shared_mutex> lock(m_callbacksLock);
+            std::shared_lock<std::shared_mutex> lock(m_callbacksLock);
 
             static EventRegistrationToken NextToken = 0;
 
@@ -41,9 +41,14 @@ namespace JaegerNet
 
         void Invoke(Args... args)
         {
-            std::shared_lock<std::shared_mutex> lock(m_callbacksLock);
+            std::map<EventRegistrationToken, std::function<void(Args...)>> localCallbacks;
 
-            for (auto&& callback : m_callbacks)
+            {
+                std::shared_lock<std::shared_mutex> lock(m_callbacksLock);
+                localCallbacks = m_callbacks;
+            }
+
+            for (auto&& callback : localCallbacks)
             {
                 callback.second(args...);
             }
