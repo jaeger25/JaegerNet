@@ -36,7 +36,7 @@ install(
     ../../inc/JaegerNet_ErrorCodes.h
     "${CMAKE_CURRENT_BINARY_DIR}/JaegerNetServer_Exports.h"
   DESTINATION
-    include
+    include/JaegerNetServer
   COMPONENT
     Devel
 )
@@ -57,7 +57,7 @@ configure_file(CMake/JaegerNetServerConfig.cmake
   COPYONLY
 )
 
-set(ConfigPackageLocation CMake/JaegerNetServer)
+set(ConfigPackageLocation share/JaegerNetServer)
 install(EXPORT JaegerNetServerTargets
   FILE
     JaegerNetServerTargets.cmake
