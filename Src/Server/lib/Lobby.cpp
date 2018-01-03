@@ -67,7 +67,7 @@ void Lobby::HandleConnectRequest(RequestReceivedEventArgs& args)
             throw JaegerNetException(JaegerNetError::LobbyCapacityExceeded);
         }
 
-        m_players.emplace_back(std::make_shared<Player>(m_players.size() + 1, m_server, std::move(args.Endpoint)));
+        m_players.emplace_back(std::make_shared<Player>(static_cast<int>(m_players.size() + 1), m_server, std::move(args.Endpoint)));
         connectedEventArgs.Player = m_players.back();
 
         auto connectBroadcast = std::make_unique<ConnectBroadcast>();

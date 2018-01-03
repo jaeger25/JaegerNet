@@ -3,7 +3,7 @@
 #include <functional>
 #include "JaegerNetClient_Exports.h"
 #include "JaegerNet_Types.h"
-#include "ErrorCodes.h"
+#include "JaegerNet_ErrorCodes.h"
 
 typedef std::function<void(JaegerNet::JaegerNetError error)> JaegerNet_ErrorCallback;
 typedef std::function<void(int playerNumber)> JaegerNet_PlayerConnectedCallback;

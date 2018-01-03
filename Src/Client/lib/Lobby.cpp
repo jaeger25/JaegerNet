@@ -1,7 +1,7 @@
 #include "Lobby.h"
 #include "Client.h"
 #include "Controller.h"
-#include "ErrorCodes.h"
+#include "JaegerNet_ErrorCodes.h"
 #include "InputListener.h"
 #include "ControllerInputMessage.pb.h"
 

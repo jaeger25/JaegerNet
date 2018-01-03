@@ -2,7 +2,7 @@
 #include <functional>
 #include <shared_mutex>
 #include <vector>
-#include "ErrorCodes.h"
+#include "JaegerNet_ErrorCodes.h"
 #include "NoCopy.h"
 #include "Player.h"
 #include "Server.h"

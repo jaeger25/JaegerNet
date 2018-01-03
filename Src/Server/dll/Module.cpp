@@ -1,5 +1,5 @@
 #include "JaegerNetServer.h"
-#include "ErrorCodes.h"
+#include "JaegerNet_ErrorCodes.h"
 #include "Session.h"
 
 using namespace JaegerNet;

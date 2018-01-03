@@ -1,5 +1,5 @@
 #include "Server.h"
-#include "ErrorCodes.h"
+#include "JaegerNet_ErrorCodes.h"
 #include <atomic>
 
 using namespace asio;

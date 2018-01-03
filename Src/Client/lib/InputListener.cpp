@@ -1,5 +1,5 @@
 #include "InputListener.h"
-#include "ErrorCodes.h"
+#include "JaegerNet_ErrorCodes.h"
 #include <shared_mutex>
 
 using namespace JaegerNet;
