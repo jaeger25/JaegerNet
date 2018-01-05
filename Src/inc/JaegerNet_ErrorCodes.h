@@ -10,6 +10,7 @@ namespace JaegerNet
         LobbyNotFound,
         LobbyCapacityExceeded,
         ControllerNotFound,
+        PlayerNotFound,
     };
 
     class JaegerNetException : public std::exception

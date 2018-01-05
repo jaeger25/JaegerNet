@@ -5,6 +5,8 @@
 #include <shared_mutex>
 #include "Client.h"
 #include "Event.h"
+#include "InputListener.h"
+#include "NoCopy.h"
 #include "Player.h"
 
 namespace JaegerNet
@@ -15,10 +17,10 @@ namespace JaegerNet
     class Controller;
     class BroadcastReceivedEventArgs;
 
-    class Lobby
+    class Lobby : NoCopy
     {
     public:
-        Lobby(Client& client);
+        Lobby(Client& client, InputListener& inputListener) noexcept;
         ~Lobby();
 
         void BindPlayerToController(int32_t playerId, int controllerIndex);
@@ -30,13 +32,13 @@ namespace JaegerNet
         void PlayerDisconnected(int32_t token);
 
         void OnBroadcastReceived(const BroadcastReceivedEventArgs& args);
-        void OnControllerStateChanged(const Controller& controller);
 
     private:
         EventSource<int32_t> m_playerConnectedEventSource;
         EventSource<int32_t> m_playerDisconnectedEventSource;
 
         Client& m_client;
+        InputListener& m_inputListener;
 
         std::shared_mutex m_playersLock;
         std::map<int, Player> m_players;

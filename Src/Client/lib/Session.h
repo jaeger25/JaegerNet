@@ -23,9 +23,7 @@ namespace JaegerNet
 
     private:
         void OnBroadcastReceived(const BroadcastReceivedEventArgs& args);
-        void OnControllerStateChanged(const Controller& controller);
 
-        int32_t m_controllerStateChangedToken;
         int32_t m_broadcastReceivedToken;
 
         JaegerNet::Client m_client;

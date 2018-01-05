@@ -7,7 +7,7 @@
 #include <thread>
 #include <asio.hpp>
 #include "Constants.h"
-#include "ErrorCodes.h"
+#include "JaegerNet_ErrorCodes.h"
 #include "Event.h"
 #include "JaegerNet.pb.h"
 

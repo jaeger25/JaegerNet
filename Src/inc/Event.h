@@ -2,19 +2,29 @@
 #include <atomic>
 #include <functional>
 #include <map>
-#include <mutex>
+#include <shared_mutex>
+#include "NoCopy.h"
+#include "JaegerNet_Types.h"
 
 namespace JaegerNet
 {
     template<typename... Args>
-    class EventSource
+    class EventSource : NoCopy
     {
     public:
-        int32_t Add(std::function<void(Args...)>&& callback)
-        {
-            std::lock_guard<std::mutex> lock(m_callbacksLock);
+        EventSource() noexcept {}
 
-            static int32_t NextToken = 0;
+        EventSource(EventSource&& other) noexcept
+        {
+            std::unique_lock<std::shared_mutex> lock(other.m_callbacksLock);
+            m_callbacks = std::move(other.m_callbacks);
+        }
+
+        EventRegistrationToken Add(std::function<void(Args...)>&& callback)
+        {
+            std::shared_lock<std::shared_mutex> lock(m_callbacksLock);
+
+            static EventRegistrationToken NextToken = 0;
 
             auto token = NextToken++;
             m_callbacks.emplace(token, std::move(callback));
@@ -22,25 +32,30 @@ namespace JaegerNet
             return token;
         }
 
-        void Remove(int32_t token)
+        void Remove(EventRegistrationToken token)
         {
-            std::lock_guard<std::mutex> lock(m_callbacksLock);
+            std::unique_lock<std::shared_mutex> lock(m_callbacksLock);
 
             m_callbacks.erase(token);
         }
 
         void Invoke(Args... args)
         {
-            std::lock_guard<std::mutex> lock(m_callbacksLock);
+            std::map<EventRegistrationToken, std::function<void(Args...)>> localCallbacks;
 
-            for (auto&& callback : m_callbacks)
+            {
+                std::shared_lock<std::shared_mutex> lock(m_callbacksLock);
+                localCallbacks = m_callbacks;
+            }
+
+            for (auto&& callback : localCallbacks)
             {
                 callback.second(args...);
             }
         }
 
     private:
-        std::mutex m_callbacksLock;
-        std::map<int32_t, std::function<void(Args...)>> m_callbacks;
+        std::shared_mutex m_callbacksLock;
+        std::map<EventRegistrationToken, std::function<void(Args...)>> m_callbacks;
     };
 }
