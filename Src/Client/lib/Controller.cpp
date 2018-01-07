@@ -2,7 +2,8 @@
 
 using namespace JaegerNet;
 
-Controller::Controller(int controllerIndex)
+Controller::Controller(int controllerIndex) :
+    m_index(controllerIndex)
 {
     m_joystick.reset(SDL_JoystickOpen(controllerIndex), [this](SDL_Joystick* joystick)
     {
@@ -31,7 +32,8 @@ int32_t Controller::Index() const
 const ControllerState Controller::CurrentState() const
 {
     ControllerState state;
-    state.AxisValue = m_axisValue;
+    state.AxisXValue = m_axisXValue;
+    state.AxisYValue = m_axisYValue;
     state.ButtonState = static_cast<ControllerButton>(m_buttonStates);
     state.DPadButtonState = static_cast<ControllerDPadButton>(m_dpadButtonStates);
 
@@ -55,7 +57,12 @@ void Controller::OnButtonStateChanged(ControllerButton button, bool pressed)
     }
 }
 
-void Controller::OnAxisMotion(int16_t value)
+void Controller::OnAxisXMotion(int16_t value)
 {
-    m_axisValue = value;
+    m_axisXValue = value;
+}
+
+void Controller::OnAxisYMotion(int16_t value)
+{
+    m_axisYValue = value;
 }

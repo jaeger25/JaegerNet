@@ -27,9 +27,30 @@ namespace JaegerNet
         Start = 0x200,
     };
 
+    inline ControllerButton operator|(ControllerButton a, ControllerButton b)
+    {
+        return static_cast<ControllerButton>(static_cast<int>(a) | static_cast<int>(b));
+    }
+
+    inline ControllerButton operator&(ControllerButton a, ControllerButton b)
+    {
+        return static_cast<ControllerButton>(static_cast<int>(a) & static_cast<int>(b));
+    }
+
+    inline ControllerDPadButton operator|(ControllerDPadButton a, ControllerDPadButton b)
+    {
+        return static_cast<ControllerDPadButton>(static_cast<int>(a) | static_cast<int>(b));
+    }
+
+    inline ControllerDPadButton operator&(ControllerDPadButton a, ControllerDPadButton b)
+    {
+        return static_cast<ControllerDPadButton>(static_cast<int>(a) & static_cast<int>(b));
+    }
+
     struct ControllerState
     {
-        int16_t AxisValue;
+        int16_t AxisXValue;
+        int16_t AxisYValue;
         ControllerButton ButtonState;
         ControllerDPadButton DPadButtonState;
     };

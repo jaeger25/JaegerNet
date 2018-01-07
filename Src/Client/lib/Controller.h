@@ -21,12 +21,14 @@ namespace JaegerNet
 
         void OnButtonStateChanged(ControllerButton buttonStates, bool pressed);
         void OnDPadButtonStateChanged(ControllerDPadButton buttonStates);
-        void OnAxisMotion(int16_t value);
+        void OnAxisXMotion(int16_t value);
+        void OnAxisYMotion(int16_t value);
 
     private:
         int32_t m_instanceId;
         int32_t m_index;
-        int16_t m_axisValue = 0;
+        int16_t m_axisXValue = 0;
+        int16_t m_axisYValue = 0;
         uint16_t m_buttonStates = 0;
         uint8_t m_dpadButtonStates = 0;
         unique_any<SDL_Joystick> m_joystick;

@@ -1,11 +1,10 @@
-include_directories(../lib)
+include_directories(../inc)
+include_directories("${CMAKE_BINARY_DIR}/exports")
 
 add_executable(ServerExe
-    "Module.cpp" "Module.h")
+    "Module.cpp")
 
 target_link_libraries(ServerExe
-    ProtoLib
-    ServerLib
-    ${PROTOBUF_LIBRARY})
+    JaegerNetServer)
 
 cotire(ServerExe)

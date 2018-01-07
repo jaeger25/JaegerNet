@@ -146,7 +146,8 @@ void InputListener::OnControllerRemoved(const SDL_JoyDeviceEvent& deviceEvent)
 
 void InputListener::OnControllerButtonChanged(const SDL_JoyButtonEvent& buttonEvent)
 {
-    Controller controller;
+    int controllerIndex = 0;
+    ControllerState controllerState;
 
     {
         std::shared_lock<std::shared_mutex> lock(m_controllersLock);
@@ -157,34 +158,61 @@ void InputListener::OnControllerButtonChanged(const SDL_JoyButtonEvent& buttonEv
         });
 
         controllerIter->OnButtonStateChanged(SdlButtonToControllerButton(buttonEvent.button), buttonEvent.state == SDL_PRESSED);
-        controller = *controllerIter;
+        controllerState = controllerIter->CurrentState();
+        controllerIndex = controllerIter->Index();
     }
 
-    m_controllerStateChangedEventSource.Invoke(controller);
+    m_controllerStateChangedEventSource.Invoke(controllerIndex, controllerState);
 }
 
 void InputListener::OnControlerDPadButtonChanged(const SDL_JoyHatEvent& hatEvent)
 {
-    std::shared_lock<std::shared_mutex> lock(m_controllersLock);
+    int controllerIndex = 0;
+    ControllerState controllerState;
 
-    auto controllerIter = std::find_if(m_controllers.begin(), m_controllers.end(), [hatEvent](auto&& controller)
     {
-        return controller.InstanceId() == hatEvent.which;
-    });
+        std::shared_lock<std::shared_mutex> lock(m_controllersLock);
 
-    controllerIter->OnDPadButtonStateChanged(SdlHatToControllerDPadButton(hatEvent.value));
+        auto controllerIter = std::find_if(m_controllers.begin(), m_controllers.end(), [hatEvent](auto&& controller)
+        {
+            return controller.InstanceId() == hatEvent.which;
+        });
+
+        controllerIter->OnDPadButtonStateChanged(SdlHatToControllerDPadButton(hatEvent.value));
+        controllerState = controllerIter->CurrentState();
+        controllerIndex = controllerIter->Index();
+    }
+
+    m_controllerStateChangedEventSource.Invoke(controllerIndex, controllerState);
 }
 
 void InputListener::OnControllerAxisMotion(const SDL_JoyAxisEvent& axisEvent)
 {
-    std::shared_lock<std::shared_mutex> lock(m_controllersLock);
+    int controllerIndex = 0;
+    ControllerState controllerState;
 
-    auto controllerIter = std::find_if(m_controllers.begin(), m_controllers.end(), [axisEvent](auto&& controller)
     {
-        return controller.InstanceId() == axisEvent.which;
-    });
+        std::shared_lock<std::shared_mutex> lock(m_controllersLock);
 
-    controllerIter->OnAxisMotion(axisEvent.value);
+        auto controllerIter = std::find_if(m_controllers.begin(), m_controllers.end(), [axisEvent](auto&& controller)
+        {
+            return controller.InstanceId() == axisEvent.which;
+        });
+
+        if (axisEvent.axis == 0)
+        {
+            controllerIter->OnAxisXMotion(axisEvent.value);
+        }
+        else if (axisEvent.axis == 1)
+        {
+            controllerIter->OnAxisYMotion(axisEvent.value);
+        }
+
+        controllerState = controllerIter->CurrentState();
+        controllerIndex = controllerIter->Index();
+    }
+
+    m_controllerStateChangedEventSource.Invoke(controllerIndex, controllerState);
 }
 
 void InputListener::RunInputThread()

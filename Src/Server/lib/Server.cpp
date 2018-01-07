@@ -101,9 +101,12 @@ void Server::OnDataReceived(const std::error_code& error, std::size_t bytesRecei
 
         JaegerNetResponse response;
         response.set_messageid(request.messageid());
+        response.set_messagetype(JaegerNetMessageType::Response);
 
         auto args = RequestReceivedEventArgs{ std::move(m_endpoint), request, response };
         m_requestReceivedEventSource.Invoke(args);
+
+        Send(args.Response);
 
         StartReceive();
     }
