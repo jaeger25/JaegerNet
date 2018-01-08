@@ -59,9 +59,10 @@ void Player::HandleInputRequest(RequestReceivedEventArgs& args)
     ControllerState controllerState;
     for (auto&& state : inputRequest.controllerinput())
     {
-        if (!m_controllerStates.count(state.messagenumber()))
+        if (state.messagenumber() >= m_nextMessageNumber && !m_controllerStates.count(state.messagenumber()))
         {
-            controllerState.AxisValue = static_cast<int16_t>(state.axisvalue());
+            controllerState.AxisXValue = static_cast<int16_t>(state.axisxvalue());
+            controllerState.AxisYValue = static_cast<int16_t>(state.axisyvalue());
             controllerState.ButtonState = static_cast<ControllerButton>(state.controllerbuttonstate());
             controllerState.DPadButtonState = static_cast<ControllerDPadButton>(state.controllerdpadbuttonstate());
 

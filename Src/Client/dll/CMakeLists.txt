@@ -9,8 +9,8 @@ add_library(JaegerNetClient SHARED
 target_link_libraries(JaegerNetClient
     PRIVATE ProtoLib
     PRIVATE ClientLib
-    SDL2::SDL2 SDL2::SDL2main
-    ${PROTOBUF_LIBRARY})
+    PRIVATE ${PROTOBUF_LIBRARIES}
+    PRIVATE SDL2::SDL2-static)
 
 generate_export_header(JaegerNetClient
     BASE_NAME JaegerNetClient

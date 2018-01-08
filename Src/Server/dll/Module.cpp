@@ -10,6 +10,7 @@ void JaegerNet_StartServer(short port)
 {
     SessionDetails details{ port };
     JaegerNetServerSession = std::make_unique<Session>(details);
+    JaegerNetServerSession->Server().Run(true);
 }
 
 void JaegerNet_StopServer(void)

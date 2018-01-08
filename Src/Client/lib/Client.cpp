@@ -106,9 +106,9 @@ void Client::OnDataReceived(const std::error_code& error, std::size_t bytesRecei
     }
 }
 
-void Client::OnDataSent(const std::error_code& error, std::size_t bytesReceived)
+void Client::OnDataSent(const std::error_code& error, std::size_t bytesSent)
 {
-    if (!error || bytesReceived > 0)
+    if (!error || bytesSent > 0)
     {
         // TODO: Log
     }

@@ -9,7 +9,7 @@
 
 namespace JaegerNet
 {
-    typedef std::function<void(const Controller& controller)> ControllerStateChangedCallback;
+    typedef std::function<void(int controllerIndex, const ControllerState& controllerState)> ControllerStateChangedCallback;
     typedef std::function<void(int controllerIndex)> ControllerAddedCallback;
     typedef std::function<void(int controllerIndex)> ControllerRemovedCallback;
 
@@ -42,7 +42,7 @@ namespace JaegerNet
 
         EventSource<int> m_controllerAddedEventSource;
         EventSource<int> m_controllerRemovedEventSource;
-        EventSource<const Controller&> m_controllerStateChangedEventSource;
+        EventSource<int, ControllerState> m_controllerStateChangedEventSource;
 
         std::shared_mutex m_controllersLock;
         std::vector<Controller> m_controllers;

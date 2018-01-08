@@ -23,7 +23,7 @@ namespace JaegerNet
         Lobby(Client& client, InputListener& inputListener) noexcept;
         ~Lobby();
 
-        void BindPlayerToController(int32_t playerId, int controllerIndex);
+        void BindPlayerToController(int playerNumber, int controllerIndex);
 
         int32_t PlayerConnected(PlayerConnectedCallback&& callback);
         void PlayerConnected(int32_t token);
@@ -42,6 +42,5 @@ namespace JaegerNet
 
         std::shared_mutex m_playersLock;
         std::map<int, Player> m_players;
-        std::map<int, int> m_controllerIndexToPlayerNumberMap;
     };
 }

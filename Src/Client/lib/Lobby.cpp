@@ -17,9 +17,17 @@ Lobby::~Lobby()
 {
 }
 
-void Lobby::BindPlayerToController(int32_t playerId, int controllerIndex)
+void Lobby::BindPlayerToController(int playerNumber, int controllerIndex)
 {
-    m_controllerIndexToPlayerNumberMap[controllerIndex] = playerId;
+    std::shared_lock<std::shared_mutex> lock(m_playersLock);
+
+    auto playerIter = m_players.find(playerNumber);
+    if (playerIter == m_players.end())
+    {
+        throw JaegerNetException(JaegerNetError::PlayerNotFound);
+    }
+
+    playerIter->second.ControllerIndex(controllerIndex);
 }
 
 int32_t Lobby::PlayerConnected(PlayerConnectedCallback&& callback)

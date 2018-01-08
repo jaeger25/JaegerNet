@@ -16,10 +16,14 @@ namespace JaegerNet
         int PlayerNumber() const;
         void PlayerNumber(int playerNumber);
 
+        int ControllerIndex() const;
+        void ControllerIndex(int controllerIndex);
+
     private:
-        void OnControllerStateChanged(const Controller& controller);
+        void OnControllerStateChanged(int controllerIndex, const ControllerState& controllerState);
         void OnControllerInputResponse(const ControllerInputResponse& response);
 
+        int m_controllerIndex = -1;
         int m_playerNumber;
         uint64_t m_nextMessageNumber = 1;
         Client& m_client;
