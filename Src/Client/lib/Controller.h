@@ -17,7 +17,8 @@ namespace JaegerNet
         int32_t InstanceId() const;
         int32_t Index() const;
 
-        const ControllerState CurrentState() const;
+        ControllerState CurrentState() const;
+        SDL_Joystick* Joystick() const;
 
         void OnButtonStateChanged(ControllerButton buttonStates, bool pressed);
         void OnDPadButtonStateChanged(ControllerDPadButton buttonStates);

@@ -1,4 +1,5 @@
 #include "JaegerNetClient.h"
+#include "Logging.h"
 #include <iostream>
 #include <mutex>
 #include <tclap/CmdLine.h>
@@ -6,8 +7,12 @@
 using namespace JaegerNet;
 using namespace std;
 
+std::shared_ptr<spdlog::logger> Logger;
+
 int main(int argc, char** argv)
 {
+    Logger = spdlog::stdout_color_mt("console");
+
     std::string hostname;
     std::string port;
     std::vector<int> controllerIndices;
@@ -32,7 +37,7 @@ int main(int argc, char** argv)
     }
     catch (TCLAP::ArgException& ex)
     {
-        cerr << "Error: " << ex.error() << " for arg [" << ex.argId() << "]" << endl;
+        Logger->error("Error: {0} for arg [{1}]", ex.error(), ex.argId());
         return 0;
     }
 
@@ -40,29 +45,29 @@ int main(int argc, char** argv)
 
     auto controllerAddedToken = JaegerNet_RegisterControllerAddedCallback([](int controllerIndex)
     {
-        cout << "Controller added: " << controllerIndex << endl;
+        Logger->info("Controller_Added: {0}", controllerIndex);
     });
 
     auto controllerRemovedToken = JaegerNet_RegisterControllerRemovedCallback([](int controllerIndex)
     {
-        cout << "Controller removed: " << controllerIndex << endl;
+        Logger->info("Controller_Removed: {0}", controllerIndex);
     });
 
     auto playerConnectedToken = JaegerNet_RegisterPlayerConnectedCallback([](int32_t playerNumber)
     {
-        cout << "Connect_PlayerConnected: " << playerNumber << endl;
+        Logger->info("Connect_PlayerConnected: {0}", playerNumber);
     });
 
     auto playerDisconnectedToken = JaegerNet_RegisterPlayerDisconnectedCallback([](int32_t playerNumber)
     {
-        cout << "Connect_PlayerDisconnected: " << playerNumber << endl;
+        Logger->info("Connect_PlayerDisconnected: {0}", playerNumber);
     });
 
     for (auto&& controllerIndex : controllerIndices)
     {
         JaegerNet_Connect(controllerIndex, [](JaegerNetError error)
         {
-            cout << "Connect_ErrorCallback: Error: " << static_cast<int32_t>(error) << endl;
+            Logger->info("Connect_ErrorCallback: {0}", static_cast<int32_t>(error));
         });
     }
 

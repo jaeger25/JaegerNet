@@ -29,7 +29,7 @@ int32_t Controller::Index() const
     return m_index;
 }
 
-const ControllerState Controller::CurrentState() const
+ControllerState Controller::CurrentState() const
 {
     ControllerState state;
     state.AxisXValue = m_axisXValue;
@@ -38,6 +38,11 @@ const ControllerState Controller::CurrentState() const
     state.DPadButtonState = static_cast<ControllerDPadButton>(m_dpadButtonStates);
 
     return state;
+}
+
+SDL_Joystick* Controller::Joystick() const
+{
+    return m_joystick.get();
 }
 
 void Controller::OnDPadButtonStateChanged(ControllerDPadButton buttonStates)

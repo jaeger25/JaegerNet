@@ -1,12 +1,17 @@
 #include "JaegerNetClient.h"
 #include "Session.h"
+#include "Logging.h"
 
 using namespace JaegerNet;
 
 std::unique_ptr<Session> JaegerNetClientSession;
+std::shared_ptr<spdlog::logger> Logger;
 
 void JaegerNet_StartClient(const char* const hostname, const char* const port)
 {
+    Logger = spdlog::stdout_color_mt("console");
+    Logger->set_level(spdlog::level::trace);
+
     SessionDetails details{ std::string(hostname), std::string(port) };
 
     JaegerNetClientSession = std::make_unique<Session>(details);
@@ -16,6 +21,8 @@ void JaegerNet_StartClient(const char* const hostname, const char* const port)
 void JaegerNet_StopClient(void)
 {
     JaegerNetClientSession.reset();
+
+    Logger.reset();
 }
 
 void JaegerNet_Connect(int controllerIndex, JaegerNet_ErrorCallback errorCallback)

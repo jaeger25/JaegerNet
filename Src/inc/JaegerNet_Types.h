@@ -54,4 +54,17 @@ namespace JaegerNet
         ControllerButton ButtonState;
         ControllerDPadButton DPadButtonState;
     };
+
+    inline bool operator==(ControllerState a, ControllerState b)
+    {
+        return a.AxisXValue == b.AxisXValue &&
+            a.AxisYValue == b.AxisYValue &&
+            a.ButtonState == b.ButtonState &&
+            a.DPadButtonState == b.DPadButtonState;
+    }
+
+    inline bool operator!=(ControllerState a, ControllerState b)
+    {
+        return !(a == b);
+    }
 }
