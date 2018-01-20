@@ -31,14 +31,16 @@ namespace JaegerNet
         void ControllerStateChanged(int32_t token);
 
     private:
-        void RunInputThread();
         void OnControllerAdded(const SDL_JoyDeviceEvent& deviceEvent);
         void OnControllerRemoved(const SDL_JoyDeviceEvent& deviceEvent);
         void OnControllerButtonChanged(const SDL_JoyButtonEvent& buttonEvent);
         void OnControlerDPadButtonChanged(const SDL_JoyHatEvent& hatEvent);
-        void OnControllerAxisMotion(const SDL_JoyAxisEvent& axisEvent);
+        void RunInputThread();
+        void RunJoystickThread();
 
+        bool m_isRunning = true;
         std::thread m_inputThread;
+        std::thread m_joystickThread;
 
         EventSource<int> m_controllerAddedEventSource;
         EventSource<int> m_controllerRemovedEventSource;

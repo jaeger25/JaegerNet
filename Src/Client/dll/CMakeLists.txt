@@ -10,7 +10,9 @@ target_link_libraries(JaegerNetClient
     PRIVATE ProtoLib
     PRIVATE ClientLib
     PRIVATE ${PROTOBUF_LIBRARIES}
-    PRIVATE SDL2::SDL2-static)
+    PRIVATE SDL2::SDL2-static
+    PRIVATE spdlog::spdlog
+    PRIVATE fmt::fmt-header-only)
 
 generate_export_header(JaegerNetClient
     BASE_NAME JaegerNetClient

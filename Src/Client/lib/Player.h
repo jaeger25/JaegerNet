@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <thread>
 #include "Client.h"
 #include "Event.h"
 #include "InputListener.h"
@@ -22,6 +23,7 @@ namespace JaegerNet
     private:
         void OnControllerStateChanged(int controllerIndex, const ControllerState& controllerState);
         void OnControllerInputResponse(const ControllerInputResponse& response);
+        void RunSendThread();
 
         int m_controllerIndex = -1;
         int m_playerNumber;
